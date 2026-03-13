@@ -12,6 +12,8 @@ interface LeftSidebarProps {
   onLogout: () => void;
   isLoading: boolean;
   userRole?: string;
+  userName?: string;
+  userEmail?: string;
 }
 
 export function LeftSidebar({
@@ -22,10 +24,18 @@ export function LeftSidebar({
   onDeleteSession,
   onLogout,
   isLoading,
-  userRole,
+  userName,
+  userEmail,
 }: LeftSidebarProps) {
-  const isCoach = userRole === "coach" || userRole === "admin";
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const initials = (userName || "U")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   // Group sessions by date
   const today = new Date();
@@ -142,46 +152,69 @@ export function LeftSidebar({
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-border space-y-1">
-        {isCoach && (
-          <a
-            href="/coach"
-            className="block w-full text-left px-3 py-2 text-sm text-scil hover:text-scil-light hover:bg-surface rounded-lg transition-colors"
-          >
-            Coach Dashboard
-          </a>
-        )}
-        <a
-          href="/training"
-          className="block w-full text-left px-3 py-2 text-sm text-scil hover:text-scil-light hover:bg-surface rounded-lg transition-colors"
-        >
-          Training
-        </a>
-        <a
-          href="/bookings"
-          className="block w-full text-left px-3 py-2 text-sm text-scil hover:text-scil-light hover:bg-surface rounded-lg transition-colors"
-        >
-          Buchungen
-        </a>
-        <a
-          href="/codes"
-          className="block w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-surface rounded-lg transition-colors"
-        >
-          Codes
-        </a>
-        <a
-          href="/profile"
-          className="block w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-surface rounded-lg transition-colors"
-        >
-          Profil
-        </a>
+      {/* Profile Dropdown Footer */}
+      <div className="relative border-t border-border">
         <button
-          onClick={onLogout}
-          className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-surface rounded-lg transition-colors"
+          onClick={() => setProfileOpen(!profileOpen)}
+          className="w-full flex items-center gap-3 p-4 hover:bg-surface transition-colors"
         >
-          Abmelden
+          <div className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center text-xs font-semibold text-slate-300 flex-shrink-0">
+            {initials}
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <div className="text-sm font-medium text-white truncate">
+              {userName || "Benutzer"}
+            </div>
+            <div className="text-xs text-slate-500 truncate">
+              {userEmail || ""}
+            </div>
+          </div>
+          <svg
+            className={`w-4 h-4 text-slate-500 transition-transform ${profileOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
         </button>
+
+        {/* Dropdown menu */}
+        {profileOpen && (
+          <div className="absolute bottom-full left-0 right-0 mb-1 mx-2 bg-surface border border-border rounded-lg shadow-xl py-1 z-50">
+            <a
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-surface-hover hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Profil
+            </a>
+            <a
+              href="/redeem"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:bg-surface-hover hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              Code einloesen
+            </a>
+            <div className="border-t border-border my-1" />
+            <button
+              onClick={() => {
+                setProfileOpen(false);
+                onLogout();
+              }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-surface-hover transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Abmelden
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
