@@ -6,6 +6,17 @@ from bfg_core.models.diagnostic import (
 from bfg_core.models.audit import AIAuditLog, ComplianceAuditLog
 from bfg_core.models.purchase import CodePurchase, PurchaseStatus, CodePackageType
 from bfg_core.models.coach import CoachAssignment, AssignmentStatus
+from bfg_core.models.training import (
+    LearningContent, ContentType, ContentArea,
+    TrainingPlan, PlanStatus,
+    TrainingDay, DayStatus,
+    TrainingProgress,
+)
+from bfg_core.models.booking import (
+    AvailabilitySlot, SlotRecurrence,
+    Booking, BookingStatus,
+    SessionBriefing, BriefingStatus,
+)
 
 __all__ = [
     "User",
@@ -23,4 +34,18 @@ __all__ = [
     "CodePackageType",
     "CoachAssignment",
     "AssignmentStatus",
+    "LearningContent",
+    "ContentType",
+    "ContentArea",
+    "TrainingPlan",
+    "PlanStatus",
+    "TrainingDay",
+    "DayStatus",
+    "TrainingProgress",
+    "AvailabilitySlot",
+    "SlotRecurrence",
+    "Booking",
+    "BookingStatus",
+    "SessionBriefing",
+    "BriefingStatus",
 ]

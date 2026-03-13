@@ -153,6 +153,18 @@ export function LeftSidebar({
           </a>
         )}
         <a
+          href="/training"
+          className="block w-full text-left px-3 py-2 text-sm text-scil hover:text-scil-light hover:bg-surface rounded-lg transition-colors"
+        >
+          Training
+        </a>
+        <a
+          href="/bookings"
+          className="block w-full text-left px-3 py-2 text-sm text-scil hover:text-scil-light hover:bg-surface rounded-lg transition-colors"
+        >
+          Buchungen
+        </a>
+        <a
           href="/codes"
           className="block w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-surface rounded-lg transition-colors"
         >

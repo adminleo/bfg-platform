@@ -32,6 +32,8 @@ diagnosis_agent = None
 token_service: TokenService | None = None
 stripe_service: StripeService | None = None
 email_service: EmailService | None = None
+training_service = None
+booking_service = None
 
 
 async def get_db():
@@ -59,7 +61,7 @@ async def get_current_user(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global ai_service, diagnosis_agent, token_service, stripe_service, email_service
+    global ai_service, diagnosis_agent, token_service, stripe_service, email_service, training_service, booking_service
 
     # Create tables (idempotent, will be replaced by Alembic in production)
     async with engine.begin() as conn:
@@ -92,11 +94,27 @@ async def lifespan(app: FastAPI):
     from app.agents.diagnosis_agent import DiagnosisAgent
     diagnosis_agent = DiagnosisAgent(ai_service, async_session)
 
+    # Initialize Training Service
+    from app.services.training_service import TrainingService
+    training_service = TrainingService(async_session, ai_service)
+    logger.info("TrainingService initialized")
+
+    # Initialize Booking Service
+    from app.services.booking_service import BookingService
+    booking_service = BookingService(async_session, ai_service)
+    logger.info("BookingService initialized")
+
     # Seed SCIL diagnostic
     from app.services.scil_seed import seed_scil_diagnostic
     async with async_session() as session:
         diag = await seed_scil_diagnostic(session)
         logger.info("SCIL diagnostic seeded: id=%s, slug=%s", diag.id, diag.slug)
+
+    # Seed training content
+    from app.services.training_content import seed_training_content
+    async with async_session() as session:
+        count = await seed_training_content(session)
+        logger.info("Training content seeded: %d new items", count)
 
     yield
 
@@ -168,6 +186,8 @@ from app.routes.payment_routes import create_payment_routes
 from app.routes.coach_routes import create_coach_routes
 from app.routes.invitation_routes import create_invitation_routes
 from app.routes.profile_routes import create_profile_routes
+from app.routes.training_routes import create_training_routes
+from app.routes.booking_routes import create_booking_routes
 
 scil_router = create_scil_routes(
     get_db=get_db,
@@ -212,6 +232,23 @@ profile_router = create_profile_routes(
     token_service=lambda: token_service,
 )
 app.include_router(profile_router, prefix="/api/v1")
+
+
+# -- Training routes --
+training_router = create_training_routes(
+    get_db=get_db,
+    get_current_user=_scil_get_current_user(),
+    training_service=lambda: training_service,
+)
+app.include_router(training_router, prefix="/api/v1")
+
+# -- Booking routes --
+booking_router = create_booking_routes(
+    get_db=get_db,
+    get_current_user=_scil_get_current_user(),
+    booking_service=lambda: booking_service,
+)
+app.include_router(booking_router, prefix="/api/v1")
 
 
 # -- Health check --
