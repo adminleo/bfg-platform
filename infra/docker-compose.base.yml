@@ -1,0 +1,44 @@
+# Shared infrastructure services for all BFG products
+# Usage: docker compose -f infra/docker-compose.base.yml up
+
+services:
+  # -- PostgreSQL Database (shared, schema-separated) --
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bfg
+      POSTGRES_PASSWORD: bfg_dev_2024
+      POSTGRES_DB: bfg
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bfg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # -- Redis (Sessions, Cache, Pub/Sub) --
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # -- Qdrant Vector Database (RAG) --
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  pgdata:
+  qdrant_data:
