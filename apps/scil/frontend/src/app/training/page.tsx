@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { useDailyTraining } from "@/hooks/useDailyTraining";
-import type { TrainingDay, TrainingPlanDetail } from "@/lib/types";
+import { AppShell } from "@/components/layout/AppShell";
+import { TrainingSidebar } from "@/components/training/TrainingSidebar";
+import type { TrainingDay } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Area config
@@ -28,16 +28,6 @@ const AREA_BG: Record<string, string> = {
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
-
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="bg-surface border border-border rounded-xl p-4">
-      <div className="text-sm text-slate-400">{label}</div>
-      <div className="text-2xl font-bold text-white mt-1">{value}</div>
-      {sub && <div className="text-xs text-slate-500 mt-1">{sub}</div>}
-    </div>
-  );
-}
 
 function ProgressRing({ progress, size = 64 }: { progress: number; size?: number }) {
   const strokeWidth = 4;
@@ -111,7 +101,7 @@ function DayCard({
             <div className="text-sm font-medium text-white">{day.title}</div>
             <div className="text-xs text-slate-500">
               Woche {day.week_number}, Tag {day.day_number}
-              {day.content && ` · ${day.content.duration_minutes} Min.`}
+              {day.content && ` \u00B7 ${day.content.duration_minutes} Min.`}
             </div>
           </div>
         </div>
@@ -205,7 +195,6 @@ function CompletionModal({
         <p className="text-sm text-slate-400 mb-4">{day.title}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Content-specific prompts */}
           {day.content?.body && (
             <div className="p-3 bg-surface-dark rounded-lg">
               {day.content.content_type === "reflection" && Array.isArray(day.content.body.prompts) && (
@@ -289,8 +278,6 @@ function CompletionModal({
 // ---------------------------------------------------------------------------
 
 export default function TrainingPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     today,
     plans,
@@ -307,24 +294,6 @@ export default function TrainingPage() {
   const [showCompletion, setShowCompletion] = useState<TrainingDay | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
-
-  // Auth guard
-  if (authLoading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-surface-dark">
-        <div className="flex gap-1">
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    router.replace("/login");
-    return null;
-  }
 
   const handleGeneratePlan = async () => {
     setGenerating(true);
@@ -355,206 +324,189 @@ export default function TrainingPage() {
   const hasActivePlan = today?.has_training || plans.some((p) => p.status === "active");
 
   return (
-    <div className="min-h-screen bg-surface-dark">
-      {/* Header */}
-      <div className="border-b border-border bg-surface-dark/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Taegliches Training</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Dein personalisiertes SCIL-Mikro-Training
-            </p>
-          </div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-surface hover:bg-surface-hover border border-border
-                       text-slate-300 rounded-lg transition-colors text-sm"
-          >
-            Zurueck zum Dashboard
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Stats Row */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <StatCard
-              label="Tage abgeschlossen"
-              value={stats.total_completed_days}
-            />
-            <StatCard
-              label="Trainingszeit"
-              value={`${stats.total_time_minutes} Min.`}
-            />
-            <StatCard
-              label="Aktuelle Serie"
-              value={`${stats.current_streak} Tage`}
-            />
-            <StatCard
-              label="Bewertung"
-              value={stats.average_rating ? `${stats.average_rating}/5` : "-"}
-            />
-          </div>
-        )}
-
-        {/* Today's Training */}
-        {today?.has_training && today.day && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-white mb-4">Heute</h2>
-            <DayCard
-              day={today.day}
-              isActive={true}
-              onStart={() => handleStartDay(today.day!.id)}
-              onComplete={() => handleOpenCompletion(today.day!)}
-            />
-          </div>
-        )}
-
-        {/* No Plan State */}
-        {!hasActivePlan && (
-          <div className="bg-surface border border-border rounded-xl p-8 text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-scil/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-scil" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">Starte dein SCIL-Training</h2>
-            <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
-              Basierend auf deinen SCIL-Ergebnissen erstellen wir einen personalisierten
-              4-Wochen-Trainingsplan mit taeglichen Mikro-Einheiten.
-            </p>
-            <button
-              onClick={handleGeneratePlan}
-              disabled={generating}
-              className="px-6 py-2.5 bg-scil hover:bg-scil-dark text-white font-medium
-                         rounded-lg transition-colors disabled:opacity-50"
-            >
-              {generating ? "Plan wird erstellt..." : "Trainingsplan erstellen"}
-            </button>
-          </div>
-        )}
-
-        {/* Active Plan Overview */}
-        {activePlan && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">{activePlan.title}</h2>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <ProgressRing progress={activePlan.overall_progress} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">
-                      {Math.round(activePlan.overall_progress * 100)}%
-                    </span>
-                  </div>
-                </div>
+    <>
+      <AppShell
+        leftSidebar={
+          <TrainingSidebar
+            today={today}
+            plans={plans}
+            stats={stats}
+            activePlanId={activePlan?.id || null}
+            onViewPlan={handleViewPlan}
+            onGeneratePlan={handleGeneratePlan}
+            generating={generating}
+          />
+        }
+        rightDefaultOpen={false}
+      >
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
+                <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
+                <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
               </div>
             </div>
+          )}
 
-            {activePlan.ai_rationale && (
-              <div className="mb-4 p-3 bg-scil/5 border border-scil/20 rounded-lg">
-                <p className="text-sm text-slate-300">{activePlan.ai_rationale}</p>
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Today's Training */}
+          {today?.has_training && today.day && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-white mb-4">Heute</h2>
+              <DayCard
+                day={today.day}
+                isActive={true}
+                onStart={() => handleStartDay(today.day!.id)}
+                onComplete={() => handleOpenCompletion(today.day!)}
+              />
+            </div>
+          )}
+
+          {/* No Plan State */}
+          {!isLoading && !hasActivePlan && (
+            <div className="bg-surface border border-border rounded-xl p-8 text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-scil/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-scil" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
-            )}
+              <h2 className="text-xl font-bold text-white mb-2">Starte dein SCIL-Training</h2>
+              <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
+                Basierend auf deinen SCIL-Ergebnissen erstellen wir einen personalisierten
+                4-Wochen-Trainingsplan mit taeglichen Mikro-Einheiten.
+              </p>
+              <button
+                onClick={handleGeneratePlan}
+                disabled={generating}
+                className="px-6 py-2.5 bg-scil hover:bg-scil-dark text-white font-medium
+                           rounded-lg transition-colors disabled:opacity-50"
+              >
+                {generating ? "Plan wird erstellt..." : "Trainingsplan erstellen"}
+              </button>
+            </div>
+          )}
 
-            {/* Week Tabs */}
-            {Array.from({ length: activePlan.total_weeks }, (_, i) => i + 1).map((week) => {
-              const weekDays = activePlan.days.filter((d) => d.week_number === week);
-              const weekCompleted = weekDays.filter((d) => d.status === "completed").length;
-              const isCurrentWeek = weekDays.some(
-                (d) => d.status === "available" || d.status === "in_progress"
-              );
-
-              return (
-                <div key={week} className="mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-sm font-medium text-slate-400">
-                      Woche {week}
-                    </h3>
-                    <span className="text-xs text-slate-500">
-                      {weekCompleted}/{weekDays.length} abgeschlossen
-                    </span>
-                    {isCurrentWeek && (
-                      <span className="text-xs bg-scil/10 text-scil px-2 py-0.5 rounded-full">
-                        Aktuell
+          {/* Active Plan Overview */}
+          {activePlan && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white">{activePlan.title}</h2>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <ProgressRing progress={activePlan.overall_progress} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {Math.round(activePlan.overall_progress * 100)}%
                       </span>
-                    )}
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                    {weekDays.map((day) => (
-                      <DayCard
-                        key={day.id}
-                        day={day}
-                        isActive={day.status === "available" || day.status === "in_progress"}
-                        onStart={() => handleStartDay(day.id)}
-                        onComplete={() => handleOpenCompletion(day)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Plans List (if no active plan detail) */}
-        {!activePlan && plans.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-white mb-4">Meine Trainingsplaene</h2>
-            <div className="space-y-3">
-              {plans.map((plan) => (
-                <div
-                  key={plan.id}
-                  onClick={() => handleViewPlan(plan.id)}
-                  className="bg-surface border border-border rounded-xl p-4 cursor-pointer
-                             hover:border-scil/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-white font-medium">{plan.title}</h3>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {plan.total_weeks} Wochen · {plan.days_per_week} Tage/Woche
-                      </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          plan.status === "active"
-                            ? "bg-scil/10 text-scil"
-                            : plan.status === "completed"
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-slate-500/10 text-slate-400"
-                        }`}
-                      >
-                        {plan.status === "active" ? "Aktiv" :
-                         plan.status === "completed" ? "Abgeschlossen" :
-                         plan.status === "paused" ? "Pausiert" : plan.status}
+                  </div>
+                </div>
+              </div>
+
+              {activePlan.ai_rationale && (
+                <div className="mb-4 p-3 bg-scil/5 border border-scil/20 rounded-lg">
+                  <p className="text-sm text-slate-300">{activePlan.ai_rationale}</p>
+                </div>
+              )}
+
+              {/* Week Tabs */}
+              {Array.from({ length: activePlan.total_weeks }, (_, i) => i + 1).map((week) => {
+                const weekDays = activePlan.days.filter((d) => d.week_number === week);
+                const weekCompleted = weekDays.filter((d) => d.status === "completed").length;
+                const isCurrentWeek = weekDays.some(
+                  (d) => d.status === "available" || d.status === "in_progress"
+                );
+
+                return (
+                  <div key={week} className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <h3 className="text-sm font-medium text-slate-400">
+                        Woche {week}
+                      </h3>
+                      <span className="text-xs text-slate-500">
+                        {weekCompleted}/{weekDays.length} abgeschlossen
                       </span>
-                      <div className="text-sm text-white font-medium">
-                        {Math.round(plan.overall_progress * 100)}%
+                      {isCurrentWeek && (
+                        <span className="text-xs bg-scil/10 text-scil px-2 py-0.5 rounded-full">
+                          Aktuell
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {weekDays.map((day) => (
+                        <DayCard
+                          key={day.id}
+                          day={day}
+                          isActive={day.status === "available" || day.status === "in_progress"}
+                          onStart={() => handleStartDay(day.id)}
+                          onComplete={() => handleOpenCompletion(day)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Plans List (if no active plan detail) */}
+          {!activePlan && plans.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-white mb-4">Meine Trainingsplaene</h2>
+              <div className="space-y-3">
+                {plans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    onClick={() => handleViewPlan(plan.id)}
+                    className="bg-surface border border-border rounded-xl p-4 cursor-pointer
+                               hover:border-scil/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-white font-medium">{plan.title}</h3>
+                        <p className="text-sm text-slate-400 mt-1">
+                          {plan.total_weeks} Wochen &middot; {plan.days_per_week} Tage/Woche
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            plan.status === "active"
+                              ? "bg-scil/10 text-scil"
+                              : plan.status === "completed"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-slate-500/10 text-slate-400"
+                          }`}
+                        >
+                          {plan.status === "active" ? "Aktiv" :
+                           plan.status === "completed" ? "Abgeschlossen" :
+                           plan.status === "paused" ? "Pausiert" : plan.status}
+                        </span>
+                        <div className="text-sm text-white font-medium">
+                          {Math.round(plan.overall_progress * 100)}%
+                        </div>
                       </div>
                     </div>
+                    <div className="mt-3 h-1.5 bg-surface-dark rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-scil rounded-full transition-all duration-500"
+                        style={{ width: `${plan.overall_progress * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  {/* Mini progress bar */}
-                  <div className="mt-3 h-1.5 bg-surface-dark rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-scil rounded-full transition-all duration-500"
-                      style={{ width: `${plan.overall_progress * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </AppShell>
 
       {/* Completion Modal */}
       {showCompletion && (
@@ -565,6 +517,6 @@ export default function TrainingPage() {
           isSubmitting={submitting}
         />
       )}
-    </div>
+    </>
   );
 }

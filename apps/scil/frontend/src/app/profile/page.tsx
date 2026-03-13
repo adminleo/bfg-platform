@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default function ProfilePage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     profile,
     coach,
@@ -27,24 +24,6 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
-
-  // Auth guard
-  if (authLoading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-surface-dark">
-        <div className="flex gap-1">
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-          <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    router.replace("/login");
-    return null;
-  }
 
   const startEdit = () => {
     setFullName(profile?.full_name || "");
@@ -71,26 +50,68 @@ export default function ProfilePage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-surface-dark">
-      {/* Header */}
-      <div className="border-b border-border bg-surface-dark/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Mein Profil</h1>
-            <p className="text-slate-400 text-sm mt-1">Verwalte deine Kontodaten</p>
-          </div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 bg-surface hover:bg-surface-hover border border-border
-                       text-slate-300 rounded-lg transition-colors text-sm"
-          >
-            Zurueck zum Dashboard
-          </button>
+  // Profile sidebar — simple section navigation
+  const profileSidebar = (
+    <div className="flex flex-col h-full">
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-scil" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <h2 className="text-sm font-semibold text-white">Profil</h2>
         </div>
+        <p className="text-xs text-slate-500">Kontodaten verwalten</p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      <nav className="px-4 space-y-0.5">
+        <a href="#personal" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Persoenliche Daten
+        </a>
+        {coach && (
+          <a href="#coach" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Mein Coach
+          </a>
+        )}
+        <a href="#password" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+          Passwort
+        </a>
+        {history.length > 0 && (
+          <a href="#history" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Diagnostik-Verlauf
+          </a>
+        )}
+      </nav>
+    </div>
+  );
+
+  return (
+    <AppShell
+      leftSidebar={profileSidebar}
+      rightDefaultOpen={false}
+    >
+      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
+              <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
+              <div className="w-2 h-2 rounded-full bg-scil typing-dot" />
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
             {error}
@@ -98,7 +119,7 @@ export default function ProfilePage() {
         )}
 
         {/* Profile Card */}
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div id="personal" className="bg-surface border border-border rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Persoenliche Daten</h2>
             {!editMode && (
@@ -186,7 +207,7 @@ export default function ProfilePage() {
 
         {/* Coach Card */}
         {coach && (
-          <div className="bg-surface border border-border rounded-xl p-6">
+          <div id="coach" className="bg-surface border border-border rounded-xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Mein Coach</h2>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-scil/20 flex items-center justify-center text-scil font-bold text-lg">
@@ -204,7 +225,7 @@ export default function ProfilePage() {
         )}
 
         {/* Password Change */}
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div id="password" className="bg-surface border border-border rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Passwort</h2>
             {!showPassword && (
@@ -273,13 +294,13 @@ export default function ProfilePage() {
               </div>
             </form>
           ) : (
-            <p className="text-slate-400 text-sm">••••••••</p>
+            <p className="text-slate-400 text-sm">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</p>
           )}
         </div>
 
         {/* Diagnostic History */}
         {history.length > 0 && (
-          <div className="bg-surface border border-border rounded-xl p-6">
+          <div id="history" className="bg-surface border border-border rounded-xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Diagnostik-Verlauf</h2>
             <div className="space-y-2">
               {history.map((h) => (
@@ -322,6 +343,6 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

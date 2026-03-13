@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useBookings } from "@/hooks/useBookings";
 import { useAuth } from "@/hooks/useAuth";
+import { AppShell } from "@/components/layout/AppShell";
+import { BookingsSidebar } from "@/components/bookings/BookingsSidebar";
 import type { Booking, AvailabilitySlot, SessionBriefing } from "@/lib/types";
 
 // ── Day names ─────────────────────────────────────────────────────────
@@ -17,17 +19,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   completed: { label: "Abgeschlossen", color: "text-blue-400", bg: "bg-blue-400/10" },
   no_show: { label: "Nicht erschienen", color: "text-slate-400", bg: "bg-slate-400/10" },
 };
-
-// ── Stat Card ─────────────────────────────────────────────────────────
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="bg-surface rounded-xl p-4 border border-border">
-      <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-      <div className="text-2xl font-bold text-white">{value}</div>
-      {sub && <div className="text-xs text-slate-400 mt-1">{sub}</div>}
-    </div>
-  );
-}
 
 // ── Booking Card ──────────────────────────────────────────────────────
 function BookingCard({
@@ -56,7 +47,7 @@ function BookingCard({
     hour: "2-digit",
     minute: "2-digit",
   });
-  const statusCfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.pending;
+  const statusCfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.requested;
   const partnerName = isCoach
     ? booking.coachee_name ?? "Coachee"
     : booking.coach_name ?? "Coach";
@@ -186,7 +177,6 @@ function SlotManager({
     }
   };
 
-  // Group slots by day
   const slotsByDay: Record<number, AvailabilitySlot[]> = {};
   slots.forEach((s) => {
     if (!slotsByDay[s.day_of_week]) slotsByDay[s.day_of_week] = [];
@@ -216,16 +206,12 @@ function SlotManager({
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
               >
                 {DAY_NAMES.map((name, i) => (
-                  <option key={i} value={i}>
-                    {name}
-                  </option>
+                  <option key={i} value={i}>{name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">
-                Dauer (Min.)
-              </label>
+              <label className="block text-xs text-slate-400 mb-1">Dauer (Min.)</label>
               <select
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
@@ -266,7 +252,6 @@ function SlotManager({
         </div>
       )}
 
-      {/* Week overview */}
       <div className="grid grid-cols-7 gap-1">
         {DAY_SHORT.map((day, i) => (
           <div key={i} className="text-center">
@@ -277,12 +262,8 @@ function SlotManager({
                   key={slot.id}
                   className="group relative bg-scil/10 border border-scil/20 rounded-md px-1 py-1 text-center"
                 >
-                  <div className="text-[10px] text-scil leading-tight">
-                    {slot.start_time}
-                  </div>
-                  <div className="text-[10px] text-scil leading-tight">
-                    {slot.end_time}
-                  </div>
+                  <div className="text-[10px] text-scil leading-tight">{slot.start_time}</div>
+                  <div className="text-[10px] text-scil leading-tight">{slot.end_time}</div>
                   <button
                     onClick={() => onDeleteSlot(slot.id)}
                     className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[8px] leading-none opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -322,12 +303,7 @@ function BriefingPanel({
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Session Briefing</h2>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-white text-xl"
-            >
-              x
-            </button>
+            <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">x</button>
           </div>
 
           {briefing.status === "generating" ? (
@@ -340,12 +316,9 @@ function BriefingPanel({
               {briefing.coachee_profile_summary && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Coachee-Profil</h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">
-                    {briefing.coachee_profile_summary}
-                  </p>
+                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.coachee_profile_summary}</p>
                 </div>
               )}
-
               {briefing.scil_highlights && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">SCIL Highlights</h3>
@@ -359,89 +332,52 @@ function BriefingPanel({
                   </div>
                 </div>
               )}
-
               {briefing.suggested_topics && briefing.suggested_topics.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-300 mb-1">
-                    Vorgeschlagene Themen
-                  </h3>
+                  <h3 className="text-sm font-medium text-slate-300 mb-1">Vorgeschlagene Themen</h3>
                   <ul className="space-y-1">
                     {briefing.suggested_topics.map((topic, i) => (
-                      <li
-                        key={i}
-                        className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2"
-                      >
-                        {topic}
-                      </li>
+                      <li key={i} className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2">{topic}</li>
                     ))}
                   </ul>
                 </div>
               )}
-
               {briefing.suggested_exercises && briefing.suggested_exercises.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-300 mb-1">
-                    Vorgeschlagene Uebungen
-                  </h3>
+                  <h3 className="text-sm font-medium text-slate-300 mb-1">Vorgeschlagene Uebungen</h3>
                   <ul className="space-y-1">
                     {briefing.suggested_exercises.map((ex, i) => (
-                      <li
-                        key={i}
-                        className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2"
-                      >
-                        {ex}
-                      </li>
+                      <li key={i} className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2">{ex}</li>
                     ))}
                   </ul>
                 </div>
               )}
-
               {briefing.previous_session_notes && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-300 mb-1">
-                    Vorherige Sessions
-                  </h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">
-                    {briefing.previous_session_notes}
-                  </p>
+                  <h3 className="text-sm font-medium text-slate-300 mb-1">Vorherige Sessions</h3>
+                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.previous_session_notes}</p>
                 </div>
               )}
-
               {briefing.training_progress_summary && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-300 mb-1">
-                    Trainingsfortschritt
-                  </h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">
-                    {briefing.training_progress_summary}
-                  </p>
+                  <h3 className="text-sm font-medium text-slate-300 mb-1">Trainingsfortschritt</h3>
+                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.training_progress_summary}</p>
                 </div>
               )}
-
               {briefing.content && (
                 <div>
-                  <h3 className="text-sm font-medium text-slate-300 mb-1">
-                    Briefing
-                  </h3>
-                  <div className="text-sm text-slate-400 bg-surface rounded-lg p-3 whitespace-pre-wrap">
-                    {briefing.content}
-                  </div>
+                  <h3 className="text-sm font-medium text-slate-300 mb-1">Briefing</h3>
+                  <div className="text-sm text-slate-400 bg-surface rounded-lg p-3 whitespace-pre-wrap">{briefing.content}</div>
                 </div>
               )}
             </div>
           )}
 
           <div className="flex gap-2 mt-6">
-            <button
-              onClick={onRegenerate}
-              className="px-4 py-2 text-sm bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
-            >
+            <button onClick={onRegenerate} className="px-4 py-2 text-sm bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors">
               Neu generieren
             </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors"
-            >
+            <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">
               Schliessen
             </button>
           </div>
@@ -459,13 +395,7 @@ function NewBookingModal({
 }: {
   coachId: string;
   onClose: () => void;
-  onBook: (data: {
-    coach_id: string;
-    scheduled_at: string;
-    topic?: string;
-    coachee_notes?: string;
-    slot_id?: string;
-  }) => Promise<void>;
+  onBook: (data: { coach_id: string; scheduled_at: string; topic?: string; coachee_notes?: string; slot_id?: string }) => Promise<void>;
 }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
@@ -478,12 +408,7 @@ function NewBookingModal({
     setSubmitting(true);
     try {
       const scheduled = `${date}T${time}:00`;
-      await onBook({
-        coach_id: coachId,
-        scheduled_at: scheduled,
-        topic: topic || undefined,
-        coachee_notes: notes || undefined,
-      });
+      await onBook({ coach_id: coachId, scheduled_at: scheduled, topic: topic || undefined, coachee_notes: notes || undefined });
       onClose();
     } finally {
       setSubmitting(false);
@@ -494,62 +419,29 @@ function NewBookingModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-surface-dark border border-border rounded-2xl max-w-md w-full mx-4 p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Neue Buchung</h2>
-
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Datum</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
-            />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Uhrzeit</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
-            />
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Thema (optional)</label>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="z.B. Kommunikation verbessern"
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600"
-            />
+            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="z.B. Kommunikation verbessern" className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Notizen (optional)</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Was moechtest du besprechen?"
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none"
-            />
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Was moechtest du besprechen?" className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
           </div>
         </div>
-
         <div className="flex gap-2 mt-5">
-          <button
-            onClick={handleSubmit}
-            disabled={!date || submitting}
-            className="flex-1 py-2 bg-scil hover:bg-scil-dark text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
+          <button onClick={handleSubmit} disabled={!date || submitting} className="flex-1 py-2 bg-scil hover:bg-scil-dark text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
             {submitting ? "Buche..." : "Buchen"}
           </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors"
-          >
-            Abbrechen
-          </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">Abbrechen</button>
         </div>
       </div>
     </div>
@@ -570,56 +462,28 @@ function CompleteModal({
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    try {
-      await onComplete(coachNotes, summary);
-      onClose();
-    } finally {
-      setSubmitting(false);
-    }
+    try { await onComplete(coachNotes, summary); onClose(); } finally { setSubmitting(false); }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-surface-dark border border-border rounded-2xl max-w-md w-full mx-4 p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Session abschliessen</h2>
-
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Coach-Notizen</label>
-            <textarea
-              value={coachNotes}
-              onChange={(e) => setCoachNotes(e.target.value)}
-              rows={3}
-              placeholder="Interne Notizen zur Session..."
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none"
-            />
+            <textarea value={coachNotes} onChange={(e) => setCoachNotes(e.target.value)} rows={3} placeholder="Interne Notizen zur Session..." className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Zusammenfassung</label>
-            <textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              rows={3}
-              placeholder="Oeffentliche Zusammenfassung der Session..."
-              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none"
-            />
+            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="Oeffentliche Zusammenfassung der Session..." className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
           </div>
         </div>
-
         <div className="flex gap-2 mt-5">
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
+          <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
             {submitting ? "Speichere..." : "Abschliessen"}
           </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors"
-          >
-            Abbrechen
-          </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">Abbrechen</button>
         </div>
       </div>
     </div>
@@ -630,26 +494,12 @@ function CompleteModal({
 // Main Page
 // ══════════════════════════════════════════════════════════════════════
 export default function BookingsPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const {
-    slots,
-    bookings,
-    upcomingBookings,
-    currentBriefing,
-    isLoading,
-    error,
-    clearError,
-    fetchSlots,
-    createSlot,
-    deleteSlot,
-    fetchBookings,
-    fetchUpcoming,
-    confirmBooking,
-    cancelBooking,
-    completeBooking,
-    createBooking,
-    fetchBriefing,
-    regenerateBriefing,
+    slots, bookings, upcomingBookings, currentBriefing,
+    isLoading, error, clearError, fetchSlots, createSlot, deleteSlot,
+    fetchBookings, fetchUpcoming, confirmBooking, cancelBooking, completeBooking,
+    createBooking, fetchBriefing, regenerateBriefing,
   } = useBookings();
 
   const [activeTab, setActiveTab] = useState<"upcoming" | "all" | "slots">("upcoming");
@@ -661,13 +511,6 @@ export default function BookingsPage() {
 
   const isCoach = user?.role === "coach" || user?.role === "admin";
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      window.location.href = "/";
-    }
-  }, [authLoading, isAuthenticated]);
-
   // Refresh bookings when filter changes
   useEffect(() => {
     if (activeTab === "all") {
@@ -675,323 +518,160 @@ export default function BookingsPage() {
     }
   }, [activeTab, statusFilter, isCoach, fetchBookings]);
 
-  if (authLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  // Stats
   const pendingCount = bookings.filter((b) => b.status === "requested").length;
   const confirmedCount = bookings.filter((b) => b.status === "confirmed").length;
   const completedCount = bookings.filter((b) => b.status === "completed").length;
 
   const handleConfirm = async (id: string) => {
     setActionLoading(true);
-    try {
-      await confirmBooking(id);
-      fetchUpcoming();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setActionLoading(false);
-    }
+    try { await confirmBooking(id); fetchUpcoming(); } catch (e) { console.error(e); } finally { setActionLoading(false); }
   };
 
   const handleCancel = async (id: string) => {
     setActionLoading(true);
-    try {
-      await cancelBooking(id);
-      fetchUpcoming();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setActionLoading(false);
-    }
+    try { await cancelBooking(id); fetchUpcoming(); } catch (e) { console.error(e); } finally { setActionLoading(false); }
   };
 
-  const handleComplete = async (id: string) => {
-    setShowComplete(id);
-  };
+  const handleComplete = async (id: string) => { setShowComplete(id); };
 
   const handleCompleteSubmit = async (notes: string, summary: string) => {
     if (!showComplete) return;
     setActionLoading(true);
-    try {
-      await completeBooking(showComplete, {
-        coach_notes: notes || undefined,
-        summary: summary || undefined,
-      });
-      fetchUpcoming();
-      setShowComplete(null);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setActionLoading(false);
-    }
+    try { await completeBooking(showComplete, { coach_notes: notes || undefined, summary: summary || undefined }); fetchUpcoming(); setShowComplete(null); } catch (e) { console.error(e); } finally { setActionLoading(false); }
   };
 
   const handleViewBriefing = async (bookingId: string) => {
-    try {
-      await fetchBriefing(bookingId);
-      setShowBriefing(true);
-    } catch (e) {
-      console.error(e);
-    }
+    try { await fetchBriefing(bookingId); setShowBriefing(true); } catch (e) { console.error(e); }
   };
 
-  const handleCreateBooking = async (data: {
-    coach_id: string;
-    scheduled_at: string;
-    topic?: string;
-    coachee_notes?: string;
-    slot_id?: string;
-  }) => {
-    await createBooking(data);
-    fetchUpcoming();
-    fetchBookings();
+  const handleCreateBooking = async (data: { coach_id: string; scheduled_at: string; topic?: string; coachee_notes?: string; slot_id?: string }) => {
+    await createBooking(data); fetchUpcoming(); fetchBookings();
   };
 
-  const handleCreateSlot = async (slot: {
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    duration_minutes: number;
-  }) => {
-    await createSlot(slot);
-  };
-
-  const handleDeleteSlot = async (id: string) => {
-    await deleteSlot(id);
-  };
+  const handleCreateSlot = async (slot: { day_of_week: number; start_time: string; end_time: string; duration_minutes: number }) => { await createSlot(slot); };
+  const handleDeleteSlot = async (id: string) => { await deleteSlot(id); };
 
   const handleRegenerate = async () => {
-    // Find the booking ID from the current briefing context
-    // The briefing panel is shown for a specific booking
     if (currentBriefing) {
       const bookingId = bookings.find((b) => b.has_briefing)?.id;
-      if (bookingId) {
-        await regenerateBriefing(bookingId);
-      }
+      if (bookingId) { await regenerateBriefing(bookingId); }
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-surface-dark">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <a href="/dashboard" className="text-slate-400 hover:text-white text-sm">
-              Dashboard
-            </a>
-            <span className="text-slate-600">/</span>
-            <h1 className="text-lg font-semibold text-white">Buchungen</h1>
-          </div>
-          {!isCoach && (
-            <button
-              onClick={() => setShowNewBooking(true)}
-              className="px-4 py-2 bg-scil hover:bg-scil-dark text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              + Neue Buchung
-            </button>
-          )}
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-6 py-6 space-y-6">
-        {/* Error banner */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
-            <span className="text-sm text-red-400">{error}</span>
-            <button onClick={clearError} className="text-red-400 hover:text-red-300 text-sm">
-              x
-            </button>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Ausstehend" value={pendingCount} />
-          <StatCard label="Bestaetigt" value={confirmedCount} />
-          <StatCard label="Abgeschlossen" value={completedCount} />
-          <StatCard
-            label={isCoach ? "Slots" : "Naechste Session"}
-            value={
-              isCoach
-                ? slots.length
-                : upcomingBookings.length > 0
-                ? new Date(upcomingBookings[0].scheduled_at).toLocaleDateString(
-                    "de-DE",
-                    { day: "2-digit", month: "2-digit" }
-                  )
-                : "--"
-            }
+    <>
+      <AppShell
+        leftSidebar={
+          <BookingsSidebar
+            statusFilter={statusFilter}
+            onStatusFilter={setStatusFilter}
+            upcomingBookings={upcomingBookings}
+            pendingCount={pendingCount}
+            confirmedCount={confirmedCount}
+            completedCount={completedCount}
+            isCoach={isCoach}
+            slotsCount={slots.length}
+            onNewBooking={() => setShowNewBooking(true)}
           />
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 bg-surface-dark rounded-lg p-1 border border-border">
-          <button
-            onClick={() => setActiveTab("upcoming")}
-            className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${
-              activeTab === "upcoming"
-                ? "bg-scil text-white"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Naechste Sessions
-          </button>
-          <button
-            onClick={() => setActiveTab("all")}
-            className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${
-              activeTab === "all"
-                ? "bg-scil text-white"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Alle Buchungen
-          </button>
-          {isCoach && (
-            <button
-              onClick={() => setActiveTab("slots")}
-              className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${
-                activeTab === "slots"
-                  ? "bg-scil text-white"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Verfuegbarkeit
-            </button>
+        }
+        rightDefaultOpen={false}
+      >
+        <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+          {/* Error banner */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
+              <span className="text-sm text-red-400">{error}</span>
+              <button onClick={clearError} className="text-red-400 hover:text-red-300 text-sm">x</button>
+            </div>
           )}
-        </div>
 
-        {/* Tab content */}
-        {activeTab === "upcoming" && (
-          <div className="space-y-4">
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
-              </div>
-            ) : upcomingBookings.length === 0 ? (
-              <div className="text-center py-12 bg-surface rounded-xl border border-border">
-                <div className="text-4xl mb-3">
-                  {isCoach ? "📅" : "🎯"}
-                </div>
-                <p className="text-slate-400 mb-2">Keine kommenden Sessions</p>
-                {!isCoach && (
-                  <button
-                    onClick={() => setShowNewBooking(true)}
-                    className="text-sm text-scil hover:text-scil-light"
-                  >
-                    Jetzt eine Session buchen
-                  </button>
-                )}
-              </div>
-            ) : (
-              upcomingBookings.map((b) => (
-                <BookingCard
-                  key={b.id}
-                  booking={b}
-                  isCoach={isCoach}
-                  onConfirm={handleConfirm}
-                  onCancel={handleCancel}
-                  onComplete={handleComplete}
-                  onViewBriefing={handleViewBriefing}
-                />
-              ))
+          {/* Tabs */}
+          <div className="flex gap-1 bg-surface-dark rounded-lg p-1 border border-border">
+            <button
+              onClick={() => setActiveTab("upcoming")}
+              className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "upcoming" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+            >
+              Naechste Sessions
+            </button>
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "all" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+            >
+              Alle Buchungen
+            </button>
+            {isCoach && (
+              <button
+                onClick={() => setActiveTab("slots")}
+                className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "slots" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+              >
+                Verfuegbarkeit
+              </button>
             )}
           </div>
-        )}
 
-        {activeTab === "all" && (
-          <div className="space-y-4">
-            {/* Status filter */}
-            <div className="flex gap-2">
-              {["", "requested", "confirmed", "completed", "cancelled"].map(
-                (st) => (
-                  <button
-                    key={st}
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                      statusFilter === st
-                        ? "bg-scil text-white"
-                        : "bg-surface text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {st === ""
-                      ? "Alle"
-                      : STATUS_CONFIG[st]?.label ?? st}
-                  </button>
-                )
+          {/* Tab content */}
+          {activeTab === "upcoming" && (
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
+                </div>
+              ) : upcomingBookings.length === 0 ? (
+                <div className="text-center py-12 bg-surface rounded-xl border border-border">
+                  <p className="text-slate-400 mb-2">Keine kommenden Sessions</p>
+                  {!isCoach && (
+                    <button onClick={() => setShowNewBooking(true)} className="text-sm text-scil hover:text-scil-light">
+                      Jetzt eine Session buchen
+                    </button>
+                  )}
+                </div>
+              ) : (
+                upcomingBookings.map((b) => (
+                  <BookingCard key={b.id} booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                ))
               )}
             </div>
+          )}
 
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
-              </div>
-            ) : bookings.length === 0 ? (
-              <div className="text-center py-12 bg-surface rounded-xl border border-border">
-                <p className="text-slate-400">Keine Buchungen gefunden</p>
-              </div>
-            ) : (
-              bookings.map((b) => (
-                <BookingCard
-                  key={b.id}
-                  booking={b}
-                  isCoach={isCoach}
-                  onConfirm={handleConfirm}
-                  onCancel={handleCancel}
-                  onComplete={handleComplete}
-                  onViewBriefing={handleViewBriefing}
-                />
-              ))
-            )}
-          </div>
-        )}
+          {activeTab === "all" && (
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
+                </div>
+              ) : bookings.length === 0 ? (
+                <div className="text-center py-12 bg-surface rounded-xl border border-border">
+                  <p className="text-slate-400">Keine Buchungen gefunden</p>
+                </div>
+              ) : (
+                bookings.map((b) => (
+                  <BookingCard key={b.id} booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                ))
+              )}
+            </div>
+          )}
 
-        {activeTab === "slots" && isCoach && (
-          <SlotManager
-            slots={slots}
-            onCreateSlot={handleCreateSlot}
-            onDeleteSlot={handleDeleteSlot}
-          />
-        )}
-      </main>
+          {activeTab === "slots" && isCoach && (
+            <SlotManager slots={slots} onCreateSlot={handleCreateSlot} onDeleteSlot={handleDeleteSlot} />
+          )}
+        </div>
+      </AppShell>
 
       {/* Modals */}
       {showNewBooking && (
-        <NewBookingModal
-          coachId=""
-          onClose={() => setShowNewBooking(false)}
-          onBook={handleCreateBooking}
-        />
+        <NewBookingModal coachId="" onClose={() => setShowNewBooking(false)} onBook={handleCreateBooking} />
       )}
-
       {showBriefing && currentBriefing && (
-        <BriefingPanel
-          briefing={currentBriefing}
-          onClose={() => setShowBriefing(false)}
-          onRegenerate={handleRegenerate}
-        />
+        <BriefingPanel briefing={currentBriefing} onClose={() => setShowBriefing(false)} onRegenerate={handleRegenerate} />
       )}
-
       {showComplete && (
-        <CompleteModal
-          onClose={() => setShowComplete(null)}
-          onComplete={handleCompleteSubmit}
-        />
+        <CompleteModal onClose={() => setShowComplete(null)} onComplete={handleCompleteSubmit} />
       )}
-
-      {/* Loading overlay for actions */}
       {actionLoading && (
         <div className="fixed inset-0 z-40 bg-black/20 flex items-center justify-center">
           <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full" />
         </div>
       )}
-    </div>
+    </>
   );
 }

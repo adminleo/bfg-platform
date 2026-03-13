@@ -16,11 +16,12 @@ interface ThreePanelLayoutProps {
   right: ReactNode;
   navItems?: NavItem[];
   currentPath?: string;
+  rightDefaultOpen?: boolean;
 }
 
-export function ThreePanelLayout({ left, center, right, navItems, currentPath }: ThreePanelLayoutProps) {
+export function ThreePanelLayout({ left, center, right, navItems, currentPath, rightDefaultOpen }: ThreePanelLayoutProps) {
   const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(rightDefaultOpen ?? true);
 
   const toggleLeft = useCallback(() => setLeftOpen((o) => !o), []);
   const toggleRight = useCallback(() => setRightOpen((o) => !o), []);
