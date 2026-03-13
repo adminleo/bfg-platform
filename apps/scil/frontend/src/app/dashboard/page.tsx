@@ -89,7 +89,7 @@ export default function DashboardPage() {
   const scilHeader = (
     <div className="p-4">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-scil flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-8 h-8 rounded-xl bg-scil flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-scil/20">
           S
         </div>
         <span className="font-semibold text-white">S.C.I.L. Profile</span>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
     <>
       {/* Code Required Banner */}
       {needsCode && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-scil/95 backdrop-blur-sm px-4 py-3">
+        <div className="fixed top-0 left-0 right-0 z-50 glass-strong bg-gradient-to-r from-scil/80 to-scil-dark/80 px-4 py-3 animate-fade-in-up">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <p className="text-white text-sm font-medium">
               Du benoetigst einen Diagnostik-Code, um eine neue Diagnostik zu starten.
@@ -109,13 +109,13 @@ export default function DashboardPage() {
             <div className="flex gap-2 ml-4">
               <a
                 href="/codes"
-                className="px-3 py-1.5 bg-white text-scil-dark text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors"
+                className="btn-glass text-white font-medium rounded-xl px-3 py-1.5 text-sm"
               >
                 Codes kaufen
               </a>
               <a
                 href="/redeem"
-                className="px-3 py-1.5 bg-white/20 text-white text-sm font-medium rounded-lg hover:bg-white/30 transition-colors"
+                className="btn-ghost text-slate-300 rounded-xl px-3 py-1.5 text-sm"
               >
                 Code einloesen
               </a>
@@ -154,17 +154,19 @@ export default function DashboardPage() {
           />
         }
       >
-        <ChatPanel
-          messages={messages}
-          isStreaming={isStreaming}
-          isComplete={isComplete}
-          progress={progress}
-          onSendMessage={handleSendMessage}
-          onStartSession={handleCreateSession}
-          hasSession={!!activeSessionId}
-          suggestions={suggestions}
-          onSelectSuggestion={handleSendMessage}
-        />
+        <div className="h-full animate-fade-in-up">
+          <ChatPanel
+            messages={messages}
+            isStreaming={isStreaming}
+            isComplete={isComplete}
+            progress={progress}
+            onSendMessage={handleSendMessage}
+            onStartSession={handleCreateSession}
+            hasSession={!!activeSessionId}
+            suggestions={suggestions}
+            onSelectSuggestion={handleSendMessage}
+          />
+        </div>
       </AppShell>
     </>
   );

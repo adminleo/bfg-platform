@@ -52,12 +52,12 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
         placeholder={placeholder || "Nachricht eingeben..."}
         disabled={disabled}
         rows={1}
-        className="flex-1 resize-none bg-surface border border-border rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-scil/50 focus:border-scil disabled:opacity-50 transition-colors"
+        className="flex-1 resize-none glass-input px-4 py-3 text-sm text-white placeholder-slate-500 disabled:opacity-50 transition-all"
       />
       <button
         onClick={handleSend}
         disabled={disabled || !text.trim()}
-        className="flex-shrink-0 p-3 bg-scil hover:bg-scil-dark text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex-shrink-0 p-3 btn-glass text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         title="Senden"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

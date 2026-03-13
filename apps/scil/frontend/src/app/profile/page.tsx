@@ -64,28 +64,28 @@ export default function ProfilePage() {
       </div>
 
       <nav className="px-4 space-y-0.5">
-        <a href="#personal" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+        <a href="#personal" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-lg transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           Persoenliche Daten
         </a>
         {coach && (
-          <a href="#coach" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+          <a href="#coach" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-lg transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             Mein Coach
           </a>
         )}
-        <a href="#password" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+        <a href="#password" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-lg transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
           Passwort
         </a>
         {history.length > 0 && (
-          <a href="#history" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-surface hover:text-white rounded-lg transition-colors">
+          <a href="#history" className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06] hover:text-white rounded-lg transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
@@ -101,7 +101,7 @@ export default function ProfilePage() {
       leftSidebar={profileSidebar}
       rightDefaultOpen={false}
     >
-      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+      <div className="w-full px-6 py-6 space-y-6 animate-fade-in-up">
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex gap-1">
@@ -113,13 +113,13 @@ export default function ProfilePage() {
         )}
 
         {error && (
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
             {error}
           </div>
         )}
 
         {/* Profile Card */}
-        <div id="personal" className="bg-surface border border-border rounded-xl p-6">
+        <div id="personal" className="glass-card p-6 animate-fade-in-up stagger-1">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Persoenliche Daten</h2>
             {!editMode && (
@@ -140,8 +140,8 @@ export default function ProfilePage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                             text-white focus:outline-none focus:border-scil"
+                  className="w-full glass-input text-white px-3 py-2.5
+                             focus:outline-none focus:border-scil"
                 />
               </div>
               <div>
@@ -151,23 +151,23 @@ export default function ProfilePage() {
                   onChange={(e) => setBio(e.target.value)}
                   rows={3}
                   placeholder="Erzaehle etwas ueber dich..."
-                  className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                             text-white placeholder-slate-500 focus:outline-none focus:border-scil resize-none"
+                  className="w-full glass-input text-white px-3 py-2.5
+                             placeholder-slate-500 focus:outline-none focus:border-scil resize-none"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-4 py-2 bg-scil hover:bg-scil-dark text-white text-sm font-medium
-                             rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 btn-glass text-white font-medium rounded-xl text-sm
+                             transition-colors disabled:opacity-50"
                 >
                   {saving ? "Wird gespeichert..." : "Speichern"}
                 </button>
                 <button
                   onClick={() => setEditMode(false)}
-                  className="px-4 py-2 bg-surface-hover text-slate-300 text-sm rounded-lg
-                             hover:bg-surface-light transition-colors border border-border"
+                  className="px-4 py-2 btn-ghost text-slate-300 rounded-xl text-sm
+                             transition-colors"
                 >
                   Abbrechen
                 </button>
@@ -207,7 +207,7 @@ export default function ProfilePage() {
 
         {/* Coach Card */}
         {coach && (
-          <div id="coach" className="bg-surface border border-border rounded-xl p-6">
+          <div id="coach" className="glass-card p-6 animate-fade-in-up stagger-2">
             <h2 className="text-lg font-semibold text-white mb-4">Mein Coach</h2>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-scil/20 flex items-center justify-center text-scil font-bold text-lg">
@@ -225,7 +225,7 @@ export default function ProfilePage() {
         )}
 
         {/* Password Change */}
-        <div id="password" className="bg-surface border border-border rounded-xl p-6">
+        <div id="password" className="glass-card p-6 animate-fade-in-up stagger-3">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Passwort</h2>
             {!showPassword && (
@@ -241,7 +241,7 @@ export default function ProfilePage() {
           {showPassword ? (
             <form onSubmit={handlePasswordChange} className="space-y-4">
               {passwordMsg && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm">
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm">
                   {passwordMsg}
                 </div>
               )}
@@ -254,8 +254,8 @@ export default function ProfilePage() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                             text-white focus:outline-none focus:border-scil"
+                  className="w-full glass-input text-white px-3 py-2.5
+                             focus:outline-none focus:border-scil"
                 />
               </div>
               <div>
@@ -268,15 +268,15 @@ export default function ProfilePage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                             text-white focus:outline-none focus:border-scil"
+                  className="w-full glass-input text-white px-3 py-2.5
+                             focus:outline-none focus:border-scil"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-scil hover:bg-scil-dark text-white text-sm font-medium
-                             rounded-lg transition-colors"
+                  className="px-4 py-2 btn-glass text-white font-medium rounded-xl text-sm
+                             transition-colors"
                 >
                   Passwort aendern
                 </button>
@@ -286,8 +286,8 @@ export default function ProfilePage() {
                     setShowPassword(false);
                     setPasswordMsg(null);
                   }}
-                  className="px-4 py-2 bg-surface-hover text-slate-300 text-sm rounded-lg
-                             hover:bg-surface-light transition-colors border border-border"
+                  className="px-4 py-2 btn-ghost text-slate-300 rounded-xl text-sm
+                             transition-colors"
                 >
                   Abbrechen
                 </button>
@@ -300,13 +300,13 @@ export default function ProfilePage() {
 
         {/* Diagnostic History */}
         {history.length > 0 && (
-          <div id="history" className="bg-surface border border-border rounded-xl p-6">
+          <div id="history" className="glass-card p-6 animate-fade-in-up stagger-4">
             <h2 className="text-lg font-semibold text-white mb-4">Diagnostik-Verlauf</h2>
             <div className="space-y-2">
               {history.map((h) => (
                 <div
                   key={h.id}
-                  className="flex items-center justify-between p-3 bg-surface-dark rounded-lg border border-border"
+                  className="flex items-center justify-between p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl"
                 >
                   <div>
                     <span className="text-sm text-white">

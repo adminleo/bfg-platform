@@ -50,10 +50,10 @@ export function LeftSidebar({
     return (
       <div
         key={session.id}
-        className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+        className={`group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 ${
           isActive
-            ? "bg-surface-hover text-white"
-            : "text-slate-400 hover:bg-surface hover:text-slate-200"
+            ? "bg-white/[0.08] text-white"
+            : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
         }`}
         onClick={() => onSelectSession(session.id)}
       >
@@ -72,9 +72,10 @@ export function LeftSidebar({
           &#x22EF;
         </button>
         {menuOpenId === session.id && (
-          <div className="absolute right-2 mt-16 bg-surface-dark border border-border rounded-lg shadow-xl py-1 z-50">
+          <div className="absolute right-2 mt-16 glass-strong rounded-xl shadow-glass py-1 z-50 animate-fade-in">
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-surface-hover"
+              className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/[0.06] rounded-lg mx-0.5"
+              style={{ width: "calc(100% - 4px)" }}
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteSession(session.id);
@@ -108,7 +109,7 @@ export function LeftSidebar({
         <button
           onClick={onCreateSession}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-scil hover:bg-scil-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 btn-glass text-white rounded-xl font-medium transition-all disabled:opacity-50"
         >
           <span className="text-lg">+</span>
           <span>Neue Diagnostik</span>

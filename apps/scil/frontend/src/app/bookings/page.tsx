@@ -13,11 +13,11 @@ const DAY_SHORT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 // ── Status config ─────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  requested: { label: "Ausstehend", color: "text-amber-400", bg: "bg-amber-400/10" },
-  confirmed: { label: "Bestaetigt", color: "text-green-400", bg: "bg-green-400/10" },
-  cancelled: { label: "Abgesagt", color: "text-red-400", bg: "bg-red-400/10" },
-  completed: { label: "Abgeschlossen", color: "text-blue-400", bg: "bg-blue-400/10" },
-  no_show: { label: "Nicht erschienen", color: "text-slate-400", bg: "bg-slate-400/10" },
+  requested: { label: "Ausstehend", color: "text-amber-400", bg: "bg-amber-400/10 border border-amber-400/20" },
+  confirmed: { label: "Bestaetigt", color: "text-green-400", bg: "bg-green-400/10 border border-green-400/20" },
+  cancelled: { label: "Abgesagt", color: "text-red-400", bg: "bg-red-400/10 border border-red-400/20" },
+  completed: { label: "Abgeschlossen", color: "text-blue-400", bg: "bg-blue-400/10 border border-blue-400/20" },
+  no_show: { label: "Nicht erschienen", color: "text-slate-400", bg: "bg-slate-400/10 border border-slate-400/20" },
 };
 
 // ── Booking Card ──────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ function BookingCard({
     : booking.coach_name ?? "Coach";
 
   return (
-    <div className="bg-surface rounded-xl border border-border p-5 hover:border-scil/30 transition-colors">
+    <div className="glass-card-interactive p-5">
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -61,7 +61,7 @@ function BookingCard({
               {statusCfg.label}
             </span>
             {booking.has_briefing && isCoach && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-400/10 text-purple-400">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-400/10 border border-purple-400/20 text-purple-400">
                 Briefing
               </span>
             )}
@@ -79,13 +79,13 @@ function BookingCard({
       </div>
 
       {booking.coachee_notes && (
-        <div className="text-xs text-slate-400 bg-surface-dark rounded-lg p-3 mb-3">
+        <div className="text-xs text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 mb-3">
           <span className="text-slate-500">Notiz:</span> {booking.coachee_notes}
         </div>
       )}
 
       {booking.summary && (
-        <div className="text-xs text-slate-400 bg-surface-dark rounded-lg p-3 mb-3">
+        <div className="text-xs text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 mb-3">
           <span className="text-slate-500">Zusammenfassung:</span> {booking.summary}
         </div>
       )}
@@ -106,7 +106,7 @@ function BookingCard({
         {isCoach && booking.status === "requested" && (
           <button
             onClick={() => onConfirm(booking.id)}
-            className="px-3 py-1.5 text-xs bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-xl border border-green-500/20 transition-colors"
           >
             Bestaetigen
           </button>
@@ -114,7 +114,7 @@ function BookingCard({
         {booking.status === "confirmed" && isCoach && (
           <button
             onClick={() => onComplete(booking.id)}
-            className="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl border border-blue-500/20 transition-colors"
           >
             Abschliessen
           </button>
@@ -122,7 +122,7 @@ function BookingCard({
         {(booking.status === "requested" || booking.status === "confirmed") && (
           <button
             onClick={() => onCancel(booking.id)}
-            className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-colors"
           >
             Absagen
           </button>
@@ -130,7 +130,7 @@ function BookingCard({
         {isCoach && booking.has_briefing && (
           <button
             onClick={() => onViewBriefing(booking.id)}
-            className="px-3 py-1.5 text-xs bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors"
           >
             Briefing ansehen
           </button>
@@ -184,26 +184,26 @@ function SlotManager({
   });
 
   return (
-    <div className="bg-surface rounded-xl border border-border p-5">
+    <div className="glass-card p-5 animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-white">Verfuegbarkeit</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-3 py-1.5 text-sm bg-scil hover:bg-scil-dark text-white rounded-lg transition-colors"
+          className="btn-glass text-white font-medium rounded-xl px-3 py-1.5 text-sm"
         >
           {showForm ? "Abbrechen" : "+ Slot hinzufuegen"}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-surface-dark rounded-lg p-4 mb-4 space-y-3">
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 mb-4 space-y-3 animate-fade-in-up">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-slate-400 mb-1">Tag</label>
               <select
                 value={dayOfWeek}
                 onChange={(e) => setDayOfWeek(Number(e.target.value))}
-                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
+                className="glass-input text-white px-3 py-2.5 w-full text-sm"
               >
                 {DAY_NAMES.map((name, i) => (
                   <option key={i} value={i}>{name}</option>
@@ -215,7 +215,7 @@ function SlotManager({
               <select
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
+                className="glass-input text-white px-3 py-2.5 w-full text-sm"
               >
                 <option value={30}>30</option>
                 <option value={45}>45</option>
@@ -229,7 +229,7 @@ function SlotManager({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
+                className="glass-input text-white px-3 py-2.5 w-full text-sm"
               />
             </div>
             <div>
@@ -238,14 +238,14 @@ function SlotManager({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white"
+                className="glass-input text-white px-3 py-2.5 w-full text-sm"
               />
             </div>
           </div>
           <button
             onClick={handleCreate}
             disabled={creating}
-            className="w-full py-2 bg-scil hover:bg-scil-dark text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="btn-glass text-white font-medium rounded-xl w-full py-2 text-sm disabled:opacity-50"
           >
             {creating ? "Erstelle..." : "Slot erstellen"}
           </button>
@@ -260,7 +260,7 @@ function SlotManager({
               {(slotsByDay[i] ?? []).map((slot) => (
                 <div
                   key={slot.id}
-                  className="group relative bg-scil/10 border border-scil/20 rounded-md px-1 py-1 text-center"
+                  className="group relative bg-scil/10 border border-scil/20 rounded-xl px-1 py-1 text-center"
                 >
                   <div className="text-[10px] text-scil leading-tight">{slot.start_time}</div>
                   <div className="text-[10px] text-scil leading-tight">{slot.end_time}</div>
@@ -298,8 +298,8 @@ function BriefingPanel({
   onRegenerate: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-dark border border-border rounded-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+      <div className="glass-strong rounded-2xl animate-fade-in-up max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">Session Briefing</h2>
@@ -316,13 +316,13 @@ function BriefingPanel({
               {briefing.coachee_profile_summary && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Coachee-Profil</h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.coachee_profile_summary}</p>
+                  <p className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">{briefing.coachee_profile_summary}</p>
                 </div>
               )}
               {briefing.scil_highlights && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">SCIL Highlights</h3>
-                  <div className="bg-surface rounded-lg p-3">
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                     {Object.entries(briefing.scil_highlights).map(([key, val]) => (
                       <div key={key} className="flex justify-between text-sm py-0.5">
                         <span className="text-slate-400 capitalize">{key}</span>
@@ -337,7 +337,7 @@ function BriefingPanel({
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Vorgeschlagene Themen</h3>
                   <ul className="space-y-1">
                     {briefing.suggested_topics.map((topic, i) => (
-                      <li key={i} className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2">{topic}</li>
+                      <li key={i} className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2">{topic}</li>
                     ))}
                   </ul>
                 </div>
@@ -347,7 +347,7 @@ function BriefingPanel({
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Vorgeschlagene Uebungen</h3>
                   <ul className="space-y-1">
                     {briefing.suggested_exercises.map((ex, i) => (
-                      <li key={i} className="text-sm text-slate-400 bg-surface rounded-lg px-3 py-2">{ex}</li>
+                      <li key={i} className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2">{ex}</li>
                     ))}
                   </ul>
                 </div>
@@ -355,29 +355,29 @@ function BriefingPanel({
               {briefing.previous_session_notes && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Vorherige Sessions</h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.previous_session_notes}</p>
+                  <p className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">{briefing.previous_session_notes}</p>
                 </div>
               )}
               {briefing.training_progress_summary && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Trainingsfortschritt</h3>
-                  <p className="text-sm text-slate-400 bg-surface rounded-lg p-3">{briefing.training_progress_summary}</p>
+                  <p className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">{briefing.training_progress_summary}</p>
                 </div>
               )}
               {briefing.content && (
                 <div>
                   <h3 className="text-sm font-medium text-slate-300 mb-1">Briefing</h3>
-                  <div className="text-sm text-slate-400 bg-surface rounded-lg p-3 whitespace-pre-wrap">{briefing.content}</div>
+                  <div className="text-sm text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 whitespace-pre-wrap">{briefing.content}</div>
                 </div>
               )}
             </div>
           )}
 
           <div className="flex gap-2 mt-6">
-            <button onClick={onRegenerate} className="px-4 py-2 text-sm bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors">
+            <button onClick={onRegenerate} className="px-4 py-2 text-sm bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors">
               Neu generieren
             </button>
-            <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">
+            <button onClick={onClose} className="btn-ghost text-slate-300 rounded-xl px-4 py-2 text-sm">
               Schliessen
             </button>
           </div>
@@ -416,32 +416,32 @@ function NewBookingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-dark border border-border rounded-2xl max-w-md w-full mx-4 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+      <div className="glass-strong rounded-2xl animate-fade-in-up max-w-md w-full mx-4 p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Neue Buchung</h2>
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Datum</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white" />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="glass-input text-white px-3 py-2.5 w-full text-sm" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Uhrzeit</label>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white" />
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="glass-input text-white px-3 py-2.5 w-full text-sm" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Thema (optional)</label>
-            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="z.B. Kommunikation verbessern" className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600" />
+            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="z.B. Kommunikation verbessern" className="glass-input text-white px-3 py-2.5 w-full text-sm placeholder:text-slate-600" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Notizen (optional)</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Was moechtest du besprechen?" className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Was moechtest du besprechen?" className="glass-input text-white px-3 py-2.5 w-full text-sm placeholder:text-slate-600 resize-none" />
           </div>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick={handleSubmit} disabled={!date || submitting} className="flex-1 py-2 bg-scil hover:bg-scil-dark text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+          <button onClick={handleSubmit} disabled={!date || submitting} className="btn-glass text-white font-medium rounded-xl flex-1 py-2 text-sm disabled:opacity-50">
             {submitting ? "Buche..." : "Buchen"}
           </button>
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">Abbrechen</button>
+          <button onClick={onClose} className="btn-ghost text-slate-300 rounded-xl px-4 py-2 text-sm">Abbrechen</button>
         </div>
       </div>
     </div>
@@ -466,24 +466,24 @@ function CompleteModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-dark border border-border rounded-2xl max-w-md w-full mx-4 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+      <div className="glass-strong rounded-2xl animate-fade-in-up max-w-md w-full mx-4 p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Session abschliessen</h2>
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Coach-Notizen</label>
-            <textarea value={coachNotes} onChange={(e) => setCoachNotes(e.target.value)} rows={3} placeholder="Interne Notizen zur Session..." className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
+            <textarea value={coachNotes} onChange={(e) => setCoachNotes(e.target.value)} rows={3} placeholder="Interne Notizen zur Session..." className="glass-input text-white px-3 py-2.5 w-full text-sm placeholder:text-slate-600 resize-none" />
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Zusammenfassung</label>
-            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="Oeffentliche Zusammenfassung der Session..." className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 resize-none" />
+            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="Oeffentliche Zusammenfassung der Session..." className="glass-input text-white px-3 py-2.5 w-full text-sm placeholder:text-slate-600 resize-none" />
           </div>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
+          <button onClick={handleSubmit} disabled={submitting} className="btn-glass text-white font-medium rounded-xl flex-1 py-2 text-sm disabled:opacity-50">
             {submitting ? "Speichere..." : "Abschliessen"}
           </button>
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-surface text-slate-300 hover:bg-surface-hover rounded-lg transition-colors">Abbrechen</button>
+          <button onClick={onClose} className="btn-ghost text-slate-300 rounded-xl px-4 py-2 text-sm">Abbrechen</button>
         </div>
       </div>
     </div>
@@ -576,7 +576,7 @@ export default function BookingsPage() {
         }
         rightDefaultOpen={false}
       >
-        <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+        <div className="w-full px-6 py-6 space-y-6 animate-fade-in-up">
           {/* Error banner */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
@@ -586,23 +586,23 @@ export default function BookingsPage() {
           )}
 
           {/* Tabs */}
-          <div className="flex gap-1 bg-surface-dark rounded-lg p-1 border border-border">
+          <div className="flex gap-1 bg-white/[0.03] border border-white/[0.06] rounded-xl p-1">
             <button
               onClick={() => setActiveTab("upcoming")}
-              className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "upcoming" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+              className={`flex-1 px-4 py-2 text-sm rounded-lg transition-colors ${activeTab === "upcoming" ? "nav-pill-active text-scil" : "text-slate-400 hover:bg-white/[0.06] hover:text-white"}`}
             >
               Naechste Sessions
             </button>
             <button
               onClick={() => setActiveTab("all")}
-              className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "all" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+              className={`flex-1 px-4 py-2 text-sm rounded-lg transition-colors ${activeTab === "all" ? "nav-pill-active text-scil" : "text-slate-400 hover:bg-white/[0.06] hover:text-white"}`}
             >
               Alle Buchungen
             </button>
             {isCoach && (
               <button
                 onClick={() => setActiveTab("slots")}
-                className={`flex-1 px-4 py-2 text-sm rounded-md transition-colors ${activeTab === "slots" ? "bg-scil text-white" : "text-slate-400 hover:text-white"}`}
+                className={`flex-1 px-4 py-2 text-sm rounded-lg transition-colors ${activeTab === "slots" ? "nav-pill-active text-scil" : "text-slate-400 hover:bg-white/[0.06] hover:text-white"}`}
               >
                 Verfuegbarkeit
               </button>
@@ -617,7 +617,7 @@ export default function BookingsPage() {
                   <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
                 </div>
               ) : upcomingBookings.length === 0 ? (
-                <div className="text-center py-12 bg-surface rounded-xl border border-border">
+                <div className="text-center py-12 glass-card animate-fade-in-up">
                   <p className="text-slate-400 mb-2">Keine kommenden Sessions</p>
                   {!isCoach && (
                     <button onClick={() => setShowNewBooking(true)} className="text-sm text-scil hover:text-scil-light">
@@ -626,8 +626,10 @@ export default function BookingsPage() {
                   )}
                 </div>
               ) : (
-                upcomingBookings.map((b) => (
-                  <BookingCard key={b.id} booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                upcomingBookings.map((b, i) => (
+                  <div key={b.id} className={`animate-fade-in-up stagger-${Math.min(i + 1, 6)}`}>
+                    <BookingCard booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                  </div>
                 ))
               )}
             </div>
@@ -640,12 +642,14 @@ export default function BookingsPage() {
                   <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full mx-auto" />
                 </div>
               ) : bookings.length === 0 ? (
-                <div className="text-center py-12 bg-surface rounded-xl border border-border">
+                <div className="text-center py-12 glass-card animate-fade-in-up">
                   <p className="text-slate-400">Keine Buchungen gefunden</p>
                 </div>
               ) : (
-                bookings.map((b) => (
-                  <BookingCard key={b.id} booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                bookings.map((b, i) => (
+                  <div key={b.id} className={`animate-fade-in-up stagger-${Math.min(i + 1, 6)}`}>
+                    <BookingCard booking={b} isCoach={isCoach} onConfirm={handleConfirm} onCancel={handleCancel} onComplete={handleComplete} onViewBriefing={handleViewBriefing} />
+                  </div>
                 ))
               )}
             </div>
@@ -668,7 +672,7 @@ export default function BookingsPage() {
         <CompleteModal onClose={() => setShowComplete(null)} onComplete={handleCompleteSubmit} />
       )}
       {actionLoading && (
-        <div className="fixed inset-0 z-40 bg-black/20 flex items-center justify-center">
+        <div className="fixed inset-0 z-40 modal-backdrop flex items-center justify-center">
           <div className="animate-spin w-8 h-8 border-2 border-scil border-t-transparent rounded-full" />
         </div>
       )}

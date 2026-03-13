@@ -44,7 +44,7 @@ function ProgressRing({ progress, size = 64 }: { progress: number; size?: number
         fill="none"
         stroke="currentColor"
         strokeWidth={strokeWidth}
-        className="text-surface-hover"
+        className="text-white/[0.06]"
       />
       <circle
         cx={size / 2}
@@ -67,11 +67,13 @@ function DayCard({
   onStart,
   onComplete,
   isActive,
+  className = "",
 }: {
   day: TrainingDay;
   onStart: () => void;
   onComplete: () => void;
   isActive: boolean;
+  className?: string;
 }) {
   const area = AREA_CONFIG[day.area] || AREA_CONFIG.general;
   const areaBg = AREA_BG[day.area] || AREA_BG.general;
@@ -82,15 +84,15 @@ function DayCard({
 
   return (
     <div
-      className={`bg-surface border rounded-xl p-4 transition-all ${
+      className={`glass-card-interactive p-4 rounded-2xl transition-all ${
         isActive
           ? "border-scil ring-1 ring-scil/30"
           : isCompleted
           ? "border-emerald-500/30"
           : isLocked
-          ? "border-border opacity-50"
-          : "border-border hover:border-scil/50"
-      }`}
+          ? "opacity-50"
+          : ""
+      } ${className}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -145,7 +147,7 @@ function DayCard({
       {isAvailable && (
         <button
           onClick={onStart}
-          className="w-full py-2 bg-scil hover:bg-scil-dark text-white text-sm font-medium rounded-lg transition-colors"
+          className="w-full py-2 btn-glass text-white text-sm font-medium rounded-xl transition-colors"
         >
           Training starten
         </button>
@@ -153,14 +155,14 @@ function DayCard({
       {isInProgress && (
         <button
           onClick={onComplete}
-          className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
+          className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors"
         >
           Als fertig markieren
         </button>
       )}
 
       {day.progress?.ai_feedback && (
-        <div className="mt-3 p-3 bg-scil/5 border border-scil/20 rounded-lg">
+        <div className="mt-3 p-3 bg-scil/5 border border-scil/20 rounded-xl">
           <div className="text-xs text-scil font-medium mb-1">Coach-Feedback</div>
           <p className="text-xs text-slate-300">{day.progress.ai_feedback}</p>
         </div>
@@ -189,14 +191,14 @@ function CompletionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface border border-border rounded-xl max-w-md w-full p-6">
+    <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div className="glass-strong rounded-2xl max-w-md w-full p-6 animate-fade-in-up">
         <h3 className="text-lg font-semibold text-white mb-1">Training abschliessen</h3>
         <p className="text-sm text-slate-400 mb-4">{day.title}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {day.content?.body && (
-            <div className="p-3 bg-surface-dark rounded-lg">
+            <div className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
               {day.content.content_type === "reflection" && Array.isArray(day.content.body.prompts) && (
                 <div className="space-y-1">
                   <div className="text-xs text-scil font-medium mb-2">Reflexionsfragen:</div>
@@ -222,7 +224,7 @@ function CompletionModal({
               onChange={(e) => setReflection(e.target.value)}
               rows={4}
               placeholder="Was hast du gelernt? Wie fuehlt es sich an?"
-              className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
+              className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl
                          text-white placeholder-slate-500 focus:outline-none focus:border-scil resize-none"
             />
           </div>
@@ -237,10 +239,10 @@ function CompletionModal({
                   key={n}
                   type="button"
                   onClick={() => setRating(n)}
-                  className={`w-10 h-10 rounded-lg border transition-colors font-medium text-sm ${
+                  className={`w-10 h-10 rounded-xl border transition-colors font-medium text-sm ${
                     n <= rating
                       ? "bg-scil border-scil text-white"
-                      : "bg-surface-dark border-border text-slate-400 hover:border-scil/50"
+                      : "bg-white/[0.03] border-white/[0.06] text-slate-400 hover:border-scil/50"
                   }`}
                 >
                   {n}
@@ -254,15 +256,14 @@ function CompletionModal({
               type="submit"
               disabled={isSubmitting}
               className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium
-                         rounded-lg transition-colors disabled:opacity-50"
+                         rounded-xl transition-colors disabled:opacity-50"
             >
               {isSubmitting ? "Wird gespeichert..." : "Abschliessen"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-surface-hover text-slate-300 text-sm rounded-lg
-                         hover:bg-surface-light transition-colors border border-border"
+              className="px-4 py-2.5 btn-ghost text-slate-300 text-sm rounded-xl"
             >
               Abbrechen
             </button>
@@ -339,7 +340,7 @@ export default function TrainingPage() {
         }
         rightDefaultOpen={false}
       >
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="w-full px-6 py-6">
           {isLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="flex gap-1">
@@ -351,14 +352,14 @@ export default function TrainingPage() {
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm animate-fade-in-up">
               {error}
             </div>
           )}
 
           {/* Today's Training */}
           {today?.has_training && today.day && (
-            <div className="mb-8">
+            <div className="mb-8 animate-fade-in-up">
               <h2 className="text-lg font-semibold text-white mb-4">Heute</h2>
               <DayCard
                 day={today.day}
@@ -371,7 +372,7 @@ export default function TrainingPage() {
 
           {/* No Plan State */}
           {!isLoading && !hasActivePlan && (
-            <div className="bg-surface border border-border rounded-xl p-8 text-center mb-8">
+            <div className="glass-card rounded-2xl p-8 text-center mb-8 animate-fade-in-up">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-scil/20 flex items-center justify-center">
                 <svg className="w-8 h-8 text-scil" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -385,8 +386,8 @@ export default function TrainingPage() {
               <button
                 onClick={handleGeneratePlan}
                 disabled={generating}
-                className="px-6 py-2.5 bg-scil hover:bg-scil-dark text-white font-medium
-                           rounded-lg transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 btn-glass text-white font-medium
+                           rounded-xl transition-colors disabled:opacity-50"
               >
                 {generating ? "Plan wird erstellt..." : "Trainingsplan erstellen"}
               </button>
@@ -395,14 +396,14 @@ export default function TrainingPage() {
 
           {/* Active Plan Overview */}
           {activePlan && (
-            <div className="mb-8">
+            <div className="mb-8 animate-fade-in-up">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-white">{activePlan.title}</h2>
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <ProgressRing progress={activePlan.overall_progress} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-bold text-white">
+                      <span className="text-xs font-bold text-white stat-number">
                         {Math.round(activePlan.overall_progress * 100)}%
                       </span>
                     </div>
@@ -411,7 +412,7 @@ export default function TrainingPage() {
               </div>
 
               {activePlan.ai_rationale && (
-                <div className="mb-4 p-3 bg-scil/5 border border-scil/20 rounded-lg">
+                <div className="mb-4 p-3 bg-scil/5 border border-scil/20 rounded-xl">
                   <p className="text-sm text-slate-300">{activePlan.ai_rationale}</p>
                 </div>
               )}
@@ -425,12 +426,12 @@ export default function TrainingPage() {
                 );
 
                 return (
-                  <div key={week} className="mb-6">
+                  <div key={week} className="mb-6 animate-fade-in-up">
                     <div className="flex items-center gap-2 mb-3">
                       <h3 className="text-sm font-medium text-slate-400">
                         Woche {week}
                       </h3>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-500 stat-number">
                         {weekCompleted}/{weekDays.length} abgeschlossen
                       </span>
                       {isCurrentWeek && (
@@ -440,13 +441,14 @@ export default function TrainingPage() {
                       )}
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
-                      {weekDays.map((day) => (
+                      {weekDays.map((day, dayIndex) => (
                         <DayCard
                           key={day.id}
                           day={day}
                           isActive={day.status === "available" || day.status === "in_progress"}
                           onStart={() => handleStartDay(day.id)}
                           onComplete={() => handleOpenCompletion(day)}
+                          className={`stagger-${Math.min(dayIndex + 1, 6)}`}
                         />
                       ))}
                     </div>
@@ -458,15 +460,14 @@ export default function TrainingPage() {
 
           {/* Plans List (if no active plan detail) */}
           {!activePlan && plans.length > 0 && (
-            <div className="mb-8">
+            <div className="mb-8 animate-fade-in-up">
               <h2 className="text-lg font-semibold text-white mb-4">Meine Trainingsplaene</h2>
               <div className="space-y-3">
-                {plans.map((plan) => (
+                {plans.map((plan, planIndex) => (
                   <div
                     key={plan.id}
                     onClick={() => handleViewPlan(plan.id)}
-                    className="bg-surface border border-border rounded-xl p-4 cursor-pointer
-                               hover:border-scil/50 transition-colors"
+                    className={`glass-card-interactive rounded-2xl p-4 cursor-pointer transition-all stagger-${Math.min(planIndex + 1, 6)}`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -489,12 +490,12 @@ export default function TrainingPage() {
                            plan.status === "completed" ? "Abgeschlossen" :
                            plan.status === "paused" ? "Pausiert" : plan.status}
                         </span>
-                        <div className="text-sm text-white font-medium">
+                        <div className="text-sm text-white font-medium stat-number">
                           {Math.round(plan.overall_progress * 100)}%
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 h-1.5 bg-surface-dark rounded-full overflow-hidden">
+                    <div className="mt-3 h-1.5 bg-white/[0.02] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-scil rounded-full transition-all duration-500"
                         style={{ width: `${plan.overall_progress * 100}%` }}

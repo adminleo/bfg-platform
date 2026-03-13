@@ -26,18 +26,18 @@ export function CodesSidebar({ codes, onRedeemClick }: CodesSidebarProps) {
 
       {/* Code inventory */}
       <div className="px-4 pb-3">
-        <div className="bg-surface rounded-lg p-3 border border-border space-y-2">
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400">Aktive Codes</span>
-            <span className="text-sm font-bold text-emerald-400">{activeCodes.length}</span>
+            <span className="text-sm font-bold text-emerald-400 stat-number">{activeCodes.length}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400">Verwendete Codes</span>
-            <span className="text-sm font-bold text-slate-500">{usedCodes.length}</span>
+            <span className="text-sm font-bold text-slate-500 stat-number">{usedCodes.length}</span>
           </div>
-          <div className="flex items-center justify-between pt-1 border-t border-border">
+          <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
             <span className="text-xs text-slate-400">Gesamt</span>
-            <span className="text-sm font-bold text-white">{codes.length}</span>
+            <span className="text-sm font-bold text-white stat-number">{codes.length}</span>
           </div>
         </div>
       </div>
@@ -48,7 +48,7 @@ export function CodesSidebar({ codes, onRedeemClick }: CodesSidebarProps) {
           <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Aktive Codes</div>
           <div className="space-y-1">
             {activeCodes.slice(0, 8).map((code) => (
-              <div key={code.id} className="flex items-center justify-between bg-surface rounded-lg px-2.5 py-1.5 border border-border">
+              <div key={code.id} className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-xl px-2.5 py-1.5">
                 <code className="text-[10px] text-slate-400 font-mono">
                   {code.token_code.slice(0, 10)}...
                 </code>
@@ -74,10 +74,10 @@ export function CodesSidebar({ codes, onRedeemClick }: CodesSidebarProps) {
       <div className="flex-1" />
 
       {/* Redeem button */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-white/[0.06]">
         <button
           onClick={onRedeemClick}
-          className="w-full px-3 py-2 bg-scil hover:bg-scil-dark text-white text-xs font-medium rounded-lg transition-colors"
+          className="w-full px-3 py-2 btn-glass text-white text-xs font-medium rounded-xl transition-all"
         >
           Code einloesen
         </button>

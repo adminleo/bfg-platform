@@ -47,20 +47,20 @@ export function BookingsSidebar({
 
       {/* Stats */}
       <div className="px-4 pb-3 grid grid-cols-2 gap-2">
-        <div className="bg-surface rounded-lg p-2.5 border border-border">
-          <div className="text-lg font-bold text-amber-400">{pendingCount}</div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+          <div className="text-lg font-bold text-amber-400 stat-number">{pendingCount}</div>
           <div className="text-[10px] text-slate-500">Ausstehend</div>
         </div>
-        <div className="bg-surface rounded-lg p-2.5 border border-border">
-          <div className="text-lg font-bold text-green-400">{confirmedCount}</div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+          <div className="text-lg font-bold text-green-400 stat-number">{confirmedCount}</div>
           <div className="text-[10px] text-slate-500">Bestaetigt</div>
         </div>
-        <div className="bg-surface rounded-lg p-2.5 border border-border">
-          <div className="text-lg font-bold text-blue-400">{completedCount}</div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+          <div className="text-lg font-bold text-blue-400 stat-number">{completedCount}</div>
           <div className="text-[10px] text-slate-500">Abgeschlossen</div>
         </div>
-        <div className="bg-surface rounded-lg p-2.5 border border-border">
-          <div className="text-lg font-bold text-white">{isCoach ? slotsCount : (upcomingBookings.length > 0 ? upcomingBookings.length : "--")}</div>
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+          <div className="text-lg font-bold text-white stat-number">{isCoach ? slotsCount : (upcomingBookings.length > 0 ? upcomingBookings.length : "--")}</div>
           <div className="text-[10px] text-slate-500">{isCoach ? "Slots" : "Kommend"}</div>
         </div>
       </div>
@@ -73,10 +73,10 @@ export function BookingsSidebar({
             <button
               key={st}
               onClick={() => onStatusFilter(st)}
-              className={`px-2.5 py-1 text-[10px] rounded-full transition-colors ${
+              className={`px-2.5 py-1 text-[10px] rounded-full transition-all duration-200 ${
                 statusFilter === st
-                  ? "bg-scil text-white"
-                  : "bg-surface text-slate-400 hover:text-white border border-border"
+                  ? "bg-scil text-white shadow-glow-sm"
+                  : "bg-white/[0.03] text-slate-400 hover:text-white border border-white/[0.06]"
               }`}
             >
               {st === "" ? "Alle" : STATUS_CONFIG[st]?.label ?? st}
@@ -100,7 +100,7 @@ export function BookingsSidebar({
               const timeStr = dt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
               const statusCfg = STATUS_CONFIG[b.status];
               return (
-                <div key={b.id} className="bg-surface border border-border rounded-lg p-2.5">
+                <div key={b.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-white truncate">
                       {b.topic || "Coaching-Session"}
@@ -121,10 +121,10 @@ export function BookingsSidebar({
 
       {/* New booking button */}
       {!isCoach && (
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-white/[0.06]">
           <button
             onClick={onNewBooking}
-            className="w-full px-3 py-2 bg-scil hover:bg-scil-dark text-white text-xs font-medium rounded-lg transition-colors"
+            className="w-full px-3 py-2 btn-glass text-white text-xs font-medium rounded-xl transition-all"
           >
             + Neue Buchung
           </button>

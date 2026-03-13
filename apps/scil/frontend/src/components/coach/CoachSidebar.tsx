@@ -40,20 +40,20 @@ export function CoachSidebar({
       {/* Stats mini */}
       {stats && (
         <div className="px-4 pb-3 grid grid-cols-2 gap-2">
-          <div className="bg-surface rounded-lg p-2.5 border border-border">
-            <div className="text-lg font-bold text-white">{stats.total_coachees}</div>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+            <div className="text-lg font-bold text-white stat-number">{stats.total_coachees}</div>
             <div className="text-[10px] text-slate-500">Coachees</div>
           </div>
-          <div className="bg-surface rounded-lg p-2.5 border border-border">
-            <div className="text-lg font-bold text-scil">{stats.active_diagnostics}</div>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+            <div className="text-lg font-bold text-scil stat-number">{stats.active_diagnostics}</div>
             <div className="text-[10px] text-slate-500">Aktive Diag.</div>
           </div>
-          <div className="bg-surface rounded-lg p-2.5 border border-border">
-            <div className="text-lg font-bold text-emerald-400">{stats.codes_available}</div>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+            <div className="text-lg font-bold text-emerald-400 stat-number">{stats.codes_available}</div>
             <div className="text-[10px] text-slate-500">Codes</div>
           </div>
-          <div className="bg-surface rounded-lg p-2.5 border border-border">
-            <div className="text-lg font-bold text-blue-400">{stats.completed_diagnostics}</div>
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">
+            <div className="text-lg font-bold text-blue-400 stat-number">{stats.completed_diagnostics}</div>
             <div className="text-[10px] text-slate-500">Abgeschl.</div>
           </div>
         </div>
@@ -75,13 +75,13 @@ export function CoachSidebar({
                 <button
                   key={c.id}
                   onClick={() => onSelectCoachee(c.id)}
-                  className={`w-full text-left flex items-center gap-2.5 p-2 rounded-lg transition-colors ${
+                  className={`w-full text-left flex items-center gap-2.5 p-2 rounded-xl transition-all duration-200 ${
                     isSelected
-                      ? "bg-scil/10 border border-scil/30"
-                      : "hover:bg-surface border border-transparent"
+                      ? "bg-scil/[0.08] border border-scil/30"
+                      : "hover:bg-white/[0.04] border border-transparent"
                   }`}
                 >
-                  <div className="w-7 h-7 rounded-full bg-surface-dark flex items-center justify-center text-slate-400 text-xs font-medium flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-slate-400 text-xs font-medium flex-shrink-0 ring-1 ring-white/[0.06]">
                     {(c.coachee_name || c.coachee_email).charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -103,10 +103,10 @@ export function CoachSidebar({
       </div>
 
       {/* Invite button */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-white/[0.06]">
         <button
           onClick={onInvite}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-scil hover:bg-scil-dark text-white text-xs font-medium rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 btn-glass text-white text-xs font-medium rounded-xl transition-all"
         >
           <span className="text-sm">+</span>
           Coachee einladen
