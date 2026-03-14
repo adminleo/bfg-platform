@@ -41,7 +41,7 @@ export function ChatPanel({
     <div className="flex flex-col h-full">
       {/* Progress bar */}
       {hasSession && progress > 0 && !isComplete && (
-        <div className="h-0.5 bg-white/[0.03]">
+        <div className="h-0.5 bg-black/[0.02]">
           <div
             className="h-full bg-gradient-to-r from-scil to-scil-light transition-all duration-500 ease-out"
             style={{ width: `${progress * 100}%` }}
@@ -56,10 +56,10 @@ export function ChatPanel({
           <div className="flex items-center justify-center h-full animate-fade-in">
             <div className="text-center max-w-md">
               <div className="text-6xl mb-4 animate-float">&#x1F98E;</div>
-              <h1 className="text-2xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 S.C.I.L. Diagnostik
               </h1>
-              <p className="text-slate-400 mb-6">
+              <p className="text-slate-500 mb-6">
                 Entdecke dein Wirkungsprofil in einem KI-gestuetzten Gespraech.
                 16 Frequenzen. 4 Bereiche. Deine Staerken.
               </p>
@@ -113,13 +113,13 @@ export function ChatPanel({
 
       {/* Suggestion chips */}
       {hasSession && !isComplete && suggestions.length > 0 && !isStreaming && (
-        <div className="border-t border-white/[0.06] px-4 py-2.5">
+        <div className="border-t border-black/[0.06] px-4 py-2.5">
           <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
             {suggestions.map((text, i) => (
               <button
                 key={`${text.slice(0, 20)}-${i}`}
                 onClick={() => onSelectSuggestion?.(text)}
-                className="px-3.5 py-2 btn-ghost rounded-full text-xs text-slate-300 hover:text-white transition-all duration-200 hover:border-scil/40 hover:shadow-sm hover:shadow-scil/10"
+                className="px-3.5 py-2 btn-ghost rounded-full text-xs text-slate-600 hover:text-slate-900 transition-all duration-200 hover:border-scil/40 hover:shadow-sm hover:shadow-scil/10"
               >
                 {text}
               </button>
@@ -130,7 +130,7 @@ export function ChatPanel({
 
       {/* Input area */}
       {hasSession && !isComplete && (
-        <div className="border-t border-white/[0.06] glass-subtle px-4 py-3">
+        <div className="border-t border-black/[0.06] glass-subtle px-4 py-3">
           <div className="max-w-3xl mx-auto">
             <ChatInput
               onSend={onSendMessage}
@@ -143,8 +143,8 @@ export function ChatPanel({
 
       {/* Completed state */}
       {isComplete && (
-        <div className="border-t border-white/[0.06] glass-subtle px-4 py-3">
-          <div className="max-w-3xl mx-auto text-center text-sm text-slate-400">
+        <div className="border-t border-black/[0.06] glass-subtle px-4 py-3">
+          <div className="max-w-3xl mx-auto text-center text-sm text-slate-500">
             &#x2713; Diagnostik abgeschlossen &mdash; Ergebnisse in der rechten Sidebar
           </div>
         </div>

@@ -28,8 +28,8 @@ export function ScoreProgress({
     return (
       <div className="bg-surface rounded-xl p-3">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-slate-400">Fortschritt</span>
-          <span className="text-xs text-slate-300">
+          <span className="text-xs text-slate-500">Fortschritt</span>
+          <span className="text-xs text-slate-600">
             {isComplete ? "Abgeschlossen" : `${questionCount}/100 Items`}
           </span>
         </div>
@@ -49,8 +49,8 @@ export function ScoreProgress({
     <div className="bg-surface rounded-xl p-3 space-y-3">
       {/* Overall progress */}
       <div className="flex justify-between items-center">
-        <span className="text-xs text-slate-400">Fortschritt</span>
-        <span className="text-xs text-slate-300 font-medium">
+        <span className="text-xs text-slate-500">Fortschritt</span>
+        <span className="text-xs text-slate-600 font-medium">
           {isComplete ? (
             <span className="text-green-400">Abgeschlossen</span>
           ) : (
@@ -88,8 +88,8 @@ export function ScoreProgress({
               </div>
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[10px] text-slate-400">{fullLabel}</span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-slate-500">{fullLabel}</span>
+                  <span className="text-[10px] text-slate-400">
                     {isDone ? (
                       <span className="text-green-400">&#10003;</span>
                     ) : (

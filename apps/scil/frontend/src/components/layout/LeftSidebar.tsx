@@ -44,7 +44,7 @@ export function LeftSidebar({
       session.status === "completed" ? "\u2713" :
       session.status === "in_progress" ? "\u25CF" : "\u25CB";
     const statusColor =
-      session.status === "completed" ? "text-green-400" :
+      session.status === "completed" ? "text-green-600" :
       session.status === "in_progress" ? "text-scil" : "text-slate-500";
 
     return (
@@ -52,8 +52,8 @@ export function LeftSidebar({
         key={session.id}
         className={`group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 ${
           isActive
-            ? "bg-white/[0.08] text-white"
-            : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+            ? "bg-black/[0.05] text-slate-900"
+            : "text-slate-500 hover:bg-black/[0.03] hover:text-slate-900"
         }`}
         onClick={() => onSelectSession(session.id)}
       >
@@ -74,7 +74,7 @@ export function LeftSidebar({
         {menuOpenId === session.id && (
           <div className="absolute right-2 mt-16 glass-strong rounded-xl shadow-glass py-1 z-50 animate-fade-in">
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/[0.06] rounded-lg mx-0.5"
+              className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-black/[0.04] rounded-lg mx-0.5"
               style={{ width: "calc(100% - 4px)" }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -94,7 +94,7 @@ export function LeftSidebar({
     if (items.length === 0) return null;
     return (
       <div className="mb-4">
-        <div className="px-3 py-1 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <div className="px-3 py-1 text-xs font-medium text-slate-400 uppercase tracking-wider">
           {label}
         </div>
         {items.map(renderSession)}
@@ -119,7 +119,7 @@ export function LeftSidebar({
       {/* Session List */}
       <div className="flex-1 overflow-y-auto p-2">
         {sessions.length === 0 ? (
-          <div className="text-center text-slate-500 text-sm mt-8 px-4">
+          <div className="text-center text-slate-400 text-sm mt-8 px-4">
             Starte deine erste SCIL-Diagnostik!
           </div>
         ) : (

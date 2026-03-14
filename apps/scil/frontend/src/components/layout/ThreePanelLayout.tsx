@@ -34,18 +34,18 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
           leftOpen ? "w-[260px]" : "w-0"
         }`}
       >
-        <div className="w-[260px] h-full overflow-y-auto border-r border-white/[0.06]">{left}</div>
+        <div className="w-[260px] h-full overflow-y-auto border-r border-black/[0.06]">{left}</div>
       </div>
 
       {/* Center + Right wrapper (with top header nav) */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header Navigation Bar */}
         {navItems && navItems.length > 0 && (
-          <div className="flex-shrink-0 h-12 glass-subtle border-b border-white/[0.06] flex items-center px-3 gap-1 z-10">
+          <div className="flex-shrink-0 h-12 glass-subtle border-b border-black/[0.06] flex items-center px-3 gap-1 z-10">
             {/* Left toggle */}
             <button
               onClick={toggleLeft}
-              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-all duration-200 mr-1"
+              className="p-1.5 rounded-lg hover:bg-black/[0.04] text-slate-400 hover:text-slate-700 transition-all duration-200 mr-1"
               title="Sidebar ein-/ausblenden"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -54,7 +54,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
               </svg>
             </button>
 
-            <div className="w-px h-5 bg-white/[0.06] mr-1" />
+            <div className="w-px h-5 bg-black/[0.08] mr-1" />
 
             {/* Nav items */}
             {navItems.map((item) => {
@@ -68,7 +68,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
                       ? "nav-pill-active text-scil"
                       : item.accent
                         ? "text-scil/80 hover:text-scil hover:bg-scil/[0.08]"
-                        : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+                        : "text-slate-500 hover:bg-black/[0.04] hover:text-slate-900"
                   }`}
                 >
                   {item.icon}
@@ -81,7 +81,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
             <div className="flex-1" />
             <button
               onClick={toggleRight}
-              className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-all duration-200"
+              className="p-1.5 rounded-lg hover:bg-black/[0.04] text-slate-400 hover:text-slate-700 transition-all duration-200"
               title="SCIL-Profil ein-/ausblenden"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -102,7 +102,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
                 <div className="absolute top-3 left-3 z-10 flex gap-1">
                   <button
                     onClick={toggleLeft}
-                    className="p-1.5 rounded-lg glass hover:bg-white/[0.1] text-slate-400 hover:text-slate-200 transition-all duration-200"
+                    className="p-1.5 rounded-lg glass hover:bg-black/[0.06] text-slate-400 hover:text-slate-700 transition-all duration-200"
                     title="Sidebar ein-/ausblenden"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -114,7 +114,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
                 <div className="absolute top-3 right-3 z-10">
                   <button
                     onClick={toggleRight}
-                    className="p-1.5 rounded-lg glass hover:bg-white/[0.1] text-slate-400 hover:text-slate-200 transition-all duration-200"
+                    className="p-1.5 rounded-lg glass hover:bg-black/[0.06] text-slate-400 hover:text-slate-700 transition-all duration-200"
                     title="Profil ein-/ausblenden"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -134,7 +134,7 @@ export function ThreePanelLayout({ left, center, right, navItems, currentPath, r
               rightOpen ? "w-[340px]" : "w-0"
             }`}
           >
-            <div className="w-[340px] h-full overflow-y-auto border-l border-white/[0.06]">{right}</div>
+            <div className="w-[340px] h-full overflow-y-auto border-l border-black/[0.06]">{right}</div>
           </div>
         </div>
       </div>

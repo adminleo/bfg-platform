@@ -17,7 +17,7 @@ const LEVEL_COLORS: Record<string, string> = {
 export function FrequencyList({ polygon }: FrequencyListProps) {
   return (
     <div className="bg-surface rounded-xl p-3">
-      <div className="text-xs text-slate-400 mb-3">16-Frequenz Detail</div>
+      <div className="text-xs text-slate-500 mb-3">16-Frequenz Detail</div>
       <div className="space-y-3">
         {Object.entries(polygon.areas).map(([areaKey, area]) => (
           <div key={areaKey}>
@@ -33,7 +33,7 @@ export function FrequencyList({ polygon }: FrequencyListProps) {
             <div className="space-y-1 pl-3.5">
               {Object.entries(area.frequencies).map(([freqKey, freq]) => (
                 <div key={freqKey} className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400 flex-1 truncate">{freq.label}</span>
+                  <span className="text-slate-500 flex-1 truncate">{freq.label}</span>
                   <div className="w-16 bg-surface-dark rounded-full h-1">
                     <div
                       className="h-full rounded-full"
@@ -43,10 +43,10 @@ export function FrequencyList({ polygon }: FrequencyListProps) {
                       }}
                     />
                   </div>
-                  <span className="text-slate-300 w-6 text-right">
+                  <span className="text-slate-600 w-6 text-right">
                     {freq.score.toFixed(1)}
                   </span>
-                  <span className={`w-3 font-mono ${LEVEL_COLORS[freq.level] || "text-slate-500"}`}>
+                  <span className={`w-3 font-mono ${LEVEL_COLORS[freq.level] || "text-slate-400"}`}>
                     {freq.level}
                   </span>
                 </div>

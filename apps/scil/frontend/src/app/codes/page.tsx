@@ -36,7 +36,7 @@ function PackageCard({
     <div className="glass-card p-6 flex flex-col">
       <div className="flex-1">
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-lg font-semibold text-white">{pkg.label}</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{pkg.label}</h3>
           {pkg.savings_percent > 0 && (
             <span className="bg-scil/20 text-scil text-xs font-medium px-2 py-1 rounded-full">
               -{pkg.savings_percent}%
@@ -44,11 +44,11 @@ function PackageCard({
           )}
         </div>
         <div className="mb-4">
-          <span className="text-3xl font-bold text-white stat-number">{unitPrice} EUR</span>
-          <span className="text-slate-400 text-sm ml-1">/ Code</span>
+          <span className="text-3xl font-bold text-slate-900 stat-number">{unitPrice} EUR</span>
+          <span className="text-slate-500 text-sm ml-1">/ Code</span>
         </div>
         {pkg.quantity > 1 && (
-          <p className="text-slate-400 text-sm mb-4">
+          <p className="text-slate-500 text-sm mb-4">
             {pkg.quantity} Codes = {totalPrice} EUR gesamt
           </p>
         )}
@@ -66,7 +66,7 @@ function PackageCard({
           <button
             onClick={onDevBuy}
             disabled={isLoading}
-            className="w-full py-2 btn-ghost text-slate-300
+            className="w-full py-2 btn-ghost text-slate-600
                        text-sm rounded-xl transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -114,16 +114,16 @@ function CodeRow({
   };
 
   return (
-    <div className="py-3 px-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+    <div className="py-3 px-4 bg-black/[0.02] border border-black/[0.06] rounded-xl">
       <div className="flex items-center justify-between gap-3">
         {/* Code + copy/reveal */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <code className="text-sm text-slate-300 font-mono truncate">
+          <code className="text-sm text-slate-600 font-mono truncate">
             {revealed ? code.token_code : `${code.token_code.slice(0, 12)}...`}
           </code>
           <button
             onClick={() => setRevealed((r) => !r)}
-            className="flex-shrink-0 p-1 rounded hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex-shrink-0 p-1 rounded hover:bg-black/[0.04] text-slate-400 hover:text-slate-700 transition-colors"
             title={revealed ? "Code verbergen" : "Code anzeigen"}
           >
             {revealed ? (
@@ -139,7 +139,7 @@ function CodeRow({
           </button>
           <button
             onClick={handleCopy}
-            className="flex-shrink-0 p-1 rounded hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex-shrink-0 p-1 rounded hover:bg-black/[0.04] text-slate-400 hover:text-slate-700 transition-colors"
             title="Code kopieren"
           >
             {copied ? (
@@ -156,10 +156,10 @@ function CodeRow({
 
         {/* Status + actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-400">
             {new Date(code.created_at).toLocaleDateString("de-DE")}
           </span>
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusInfo.color} bg-white/[0.04]`}>
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusInfo.color} bg-black/[0.03]`}>
             {statusInfo.label}
           </span>
 
@@ -251,8 +251,8 @@ export default function CodesPage() {
 
         {/* Page title */}
         <div className="mb-6 animate-fade-in-up">
-          <h1 className="text-xl font-bold text-white">SCIL Diagnostik-Codes</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-xl font-bold text-slate-900">SCIL Diagnostik-Codes</h1>
+          <p className="text-slate-500 text-sm mt-1">
             Kaufe Codes fuer die SCIL-Wirkungsdiagnostik
           </p>
         </div>
@@ -275,11 +275,11 @@ export default function CodesPage() {
         {/* My Codes */}
         {codes.length > 0 && (
           <div className="animate-fade-in-up">
-            <h2 className="text-xl font-semibold text-white mb-4">Meine Codes</h2>
+            <h2 className="text-xl font-semibold text-slate-900 mb-4">Meine Codes</h2>
 
             {activeCodes.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-wider">
                   Aktive Codes ({activeCodes.length})
                 </h3>
                 <div className="space-y-2">
@@ -297,7 +297,7 @@ export default function CodesPage() {
 
             {usedCodes.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-slate-400 mb-2 uppercase tracking-wider">
+                <h3 className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-wider">
                   Verwendete Codes ({usedCodes.length})
                 </h3>
                 <div className="space-y-2">

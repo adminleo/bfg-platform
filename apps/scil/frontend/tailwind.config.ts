@@ -8,21 +8,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // SCIL Branding (Orange/Gold)
+        // SCIL Branding (Orange gradient)
         scil: {
           DEFAULT: "#E88D2A",
           dark: "#C67520",
           light: "#F5A84D",
+          50: "#FFF7ED",
+          100: "#FFEDD5",
         },
-        // Dark Dashboard Theme
+        // Light Dashboard Theme
         surface: {
-          DEFAULT: "#1E293B", // Slate 800
-          dark: "#0F172A",    // Slate 900 — background
-          hover: "#334155",   // Slate 700
-          light: "#475569",   // Slate 600
+          DEFAULT: "#FFFFFF",        // White cards
+          dark: "#F5F5F7",           // Greyish-white background
+          hover: "#F0F0F2",          // Hover state
+          light: "#E8E8EC",          // Pressed / active
         },
         border: {
-          DEFAULT: "rgba(148, 163, 184, 0.12)", // Subtle glass border
+          DEFAULT: "rgba(0, 0, 0, 0.08)",
         },
         // SCIL Frequency Colors
         freq: {
@@ -39,12 +41,14 @@ const config: Config = {
         xs: "2px",
       },
       boxShadow: {
-        glass: "0 4px 30px rgba(0, 0, 0, 0.15)",
-        "glass-sm": "0 2px 15px rgba(0, 0, 0, 0.1)",
-        "glass-lg": "0 8px 40px rgba(0, 0, 0, 0.2)",
-        glow: "0 0 20px rgba(232, 141, 42, 0.15)",
-        "glow-sm": "0 0 10px rgba(232, 141, 42, 0.1)",
-        "inner-glow": "inset 0 1px 0 0 rgba(148, 163, 184, 0.1)",
+        glass: "0 2px 20px rgba(0, 0, 0, 0.06)",
+        "glass-sm": "0 1px 10px rgba(0, 0, 0, 0.04)",
+        "glass-lg": "0 4px 30px rgba(0, 0, 0, 0.08)",
+        card: "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)",
+        "card-hover": "0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)",
+        glow: "0 0 20px rgba(232, 141, 42, 0.12)",
+        "glow-sm": "0 0 10px rgba(232, 141, 42, 0.08)",
+        "inner-glow": "inset 0 1px 0 0 rgba(255, 255, 255, 0.8)",
       },
       animation: {
         "fade-in": "fadeIn 0.3s ease-out",

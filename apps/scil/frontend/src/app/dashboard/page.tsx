@@ -89,10 +89,10 @@ export default function DashboardPage() {
   const scilHeader = (
     <div className="p-4">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-xl bg-scil flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-scil/20">
+        <div className="w-8 h-8 rounded-xl bg-scil flex items-center justify-center text-slate-900 font-bold text-sm shadow-lg shadow-scil/20">
           S
         </div>
-        <span className="font-semibold text-white">S.C.I.L. Profile</span>
+        <span className="font-semibold text-slate-900">S.C.I.L. Profile</span>
       </div>
     </div>
   );
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       {needsCode && (
         <div className="fixed top-0 left-0 right-0 z-50 glass-strong bg-gradient-to-r from-scil/80 to-scil-dark/80 px-4 py-3 animate-fade-in-up">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <p className="text-white text-sm font-medium">
+            <p className="text-slate-900 text-sm font-medium">
               Du benoetigst einen Diagnostik-Code, um eine neue Diagnostik zu starten.
             </p>
             <div className="flex gap-2 ml-4">
@@ -115,7 +115,7 @@ export default function DashboardPage() {
               </a>
               <a
                 href="/redeem"
-                className="btn-ghost text-slate-300 rounded-xl px-3 py-1.5 text-sm"
+                className="btn-ghost text-slate-600 rounded-xl px-3 py-1.5 text-sm"
               >
                 Code einloesen
               </a>

@@ -52,7 +52,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
         placeholder={placeholder || "Nachricht eingeben..."}
         disabled={disabled}
         rows={1}
-        className="flex-1 resize-none glass-input px-4 py-3 text-sm text-white placeholder-slate-500 disabled:opacity-50 transition-all"
+        className="flex-1 resize-none glass-input px-4 py-3 text-sm text-slate-900 placeholder-slate-400 disabled:opacity-50 transition-all"
       />
       <button
         onClick={handleSend}
