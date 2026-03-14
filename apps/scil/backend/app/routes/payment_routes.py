@@ -164,7 +164,7 @@ def create_payment_routes(
             db=db,
         )
 
-        # Load the generated tokens
+        # Load the generated tokens and auto-activate all for the buyer
         codes = []
         if purchase.token_ids:
             for tid in purchase.token_ids:
@@ -173,6 +173,11 @@ def create_payment_routes(
                 )
                 token = result.scalar_one_or_none()
                 if token:
+                    # Auto-activate for the purchasing user (dev convenience)
+                    try:
+                        token = await _tokens().activate_token(token.token_code, user.id)
+                    except ValueError as e:
+                        logger.warning("Auto-activate failed for token %s: %s", tid, e)
                     codes.append(_token_to_response(token))
 
         return PurchaseDetailResponse(
@@ -250,6 +255,46 @@ def create_payment_routes(
             raise HTTPException(
                 status_code=400,
                 detail=f"Code konnte nicht eingeloest werden: {str(e)}",
+            )
+
+    @router.post("/activate/{code_id}")
+    async def activate_code(
+        code_id: UUID,
+        db: AsyncSession = Depends(get_db),
+        user: User = Depends(get_current_user),
+    ):
+        """Activate a specific code by ID for the current user.
+
+        Unlike /redeem (which takes a code string), this takes the code UUID
+        and is used from the codes management page.
+        """
+        result = await db.execute(
+            select(DiagnosticToken).where(DiagnosticToken.id == code_id)
+        )
+        token = result.scalar_one_or_none()
+        if not token:
+            raise HTTPException(status_code=404, detail="Code nicht gefunden")
+
+        # Verify ownership: user must be the buyer (sold_by_expert_id) or
+        # the code must be unowned
+        if (
+            token.sold_by_expert_id != user.id
+            and token.user_id is not None
+            and token.user_id != user.id
+        ):
+            raise HTTPException(status_code=403, detail="Kein Zugriff auf diesen Code")
+
+        try:
+            activated = await _tokens().activate_token(token.token_code, user.id)
+            return {
+                "status": "activated",
+                "token_code": activated.token_code,
+                "message": "Code aktiviert! Du kannst jetzt eine Diagnostik starten.",
+            }
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Code konnte nicht aktiviert werden: {str(e)}",
             )
 
     @router.get("/purchase/{purchase_id}", response_model=PurchaseDetailResponse)

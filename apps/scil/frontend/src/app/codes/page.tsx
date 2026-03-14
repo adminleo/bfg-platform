@@ -9,7 +9,7 @@ import type { CodePackage, DiagnosticCode } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   emitted: { label: "Verfuegbar", color: "text-emerald-400" },
-  sold: { label: "Verkauft", color: "text-blue-400" },
+  sold: { label: "Gekauft", color: "text-blue-400" },
   assigned: { label: "Zugewiesen", color: "text-yellow-400" },
   activated: { label: "Aktiviert", color: "text-scil" },
   consumed: { label: "Verwendet", color: "text-slate-500" },
@@ -78,14 +78,23 @@ function PackageCard({
   );
 }
 
-function CodeRow({ code }: { code: DiagnosticCode }) {
+function CodeRow({
+  code,
+  onActivate,
+  isLoading,
+}: {
+  code: DiagnosticCode;
+  onActivate: (codeId: string) => void;
+  isLoading: boolean;
+}) {
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
   const statusInfo = STATUS_LABELS[code.status] || {
     label: code.status,
     color: "text-slate-400",
   };
-  const isUsable = code.status === "activated" || code.status === "emitted" || code.status === "sold";
+  const canActivate = code.status === "emitted" || code.status === "sold" || code.status === "assigned";
+  const isActivated = code.status === "activated";
 
   const handleCopy = async () => {
     try {
@@ -93,7 +102,6 @@ function CodeRow({ code }: { code: DiagnosticCode }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
       const textarea = document.createElement("textarea");
       textarea.value = code.token_code;
       document.body.appendChild(textarea);
@@ -107,7 +115,8 @@ function CodeRow({ code }: { code: DiagnosticCode }) {
 
   return (
     <div className="py-3 px-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
+        {/* Code + copy/reveal */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <code className="text-sm text-slate-300 font-mono truncate">
             {revealed ? code.token_code : `${code.token_code.slice(0, 12)}...`}
@@ -144,14 +153,36 @@ function CodeRow({ code }: { code: DiagnosticCode }) {
             )}
           </button>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+
+        {/* Status + actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-slate-500">
             {new Date(code.created_at).toLocaleDateString("de-DE")}
           </span>
-          <span className={`text-sm font-medium ${statusInfo.color}`}>
-            {isUsable && "\u25CF "}
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusInfo.color} bg-white/[0.04]`}>
             {statusInfo.label}
           </span>
+
+          {/* Activate button for sold/emitted codes */}
+          {canActivate && (
+            <button
+              onClick={() => onActivate(code.id)}
+              disabled={isLoading}
+              className="px-3 py-1 text-xs font-medium text-white btn-glass rounded-lg transition-all disabled:opacity-50"
+            >
+              Aktivieren
+            </button>
+          )}
+
+          {/* Start diagnostic link for activated codes */}
+          {isActivated && (
+            <a
+              href="/dashboard"
+              className="px-3 py-1 text-xs font-medium text-white bg-emerald-500/80 hover:bg-emerald-500 rounded-lg transition-all"
+            >
+              Diagnostik starten
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -160,11 +191,28 @@ function CodeRow({ code }: { code: DiagnosticCode }) {
 
 export default function CodesPage() {
   const router = useRouter();
-  const { codes, packages, isLoading, error, purchasePackage, devPurchase } = useCodes();
+  const { codes, packages, isLoading, error, purchasePackage, devPurchase, activateCode } = useCodes();
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const isDev = process.env.NODE_ENV === "development" || typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const activeCodes = codes.filter((c) => ["emitted", "sold", "activated"].includes(c.status));
   const usedCodes = codes.filter((c) => ["consumed", "expired"].includes(c.status));
+
+  const handleActivate = async (codeId: string) => {
+    const result = await activateCode(codeId);
+    if (result.success) {
+      setSuccessMsg(result.message);
+      setTimeout(() => setSuccessMsg(null), 5000);
+    }
+  };
+
+  const handleDevPurchase = async (packageType: string) => {
+    const purchase = await devPurchase(packageType);
+    if (purchase) {
+      setSuccessMsg("Code generiert und aktiviert! Du kannst jetzt eine Diagnostik starten.");
+      setTimeout(() => setSuccessMsg(null), 5000);
+    }
+  };
 
   return (
     <AppShell
@@ -177,6 +225,24 @@ export default function CodesPage() {
       rightDefaultOpen={false}
     >
       <div className="w-full px-6 py-6">
+        {/* Success message */}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm animate-fade-in-up flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{successMsg}</span>
+            </div>
+            <a
+              href="/dashboard"
+              className="ml-4 px-3 py-1.5 text-xs font-medium text-white bg-emerald-500/80 hover:bg-emerald-500 rounded-lg transition-all flex-shrink-0"
+            >
+              Zur Diagnostik
+            </a>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm animate-fade-in-up">
             {error}
@@ -198,7 +264,7 @@ export default function CodesPage() {
               <PackageCard
                 pkg={pkg}
                 onBuy={() => purchasePackage(pkg.type)}
-                onDevBuy={() => devPurchase(pkg.type)}
+                onDevBuy={() => handleDevPurchase(pkg.type)}
                 isLoading={isLoading}
                 isDev={isDev}
               />
@@ -218,7 +284,12 @@ export default function CodesPage() {
                 </h3>
                 <div className="space-y-2">
                   {activeCodes.map((code) => (
-                    <CodeRow key={code.id} code={code} />
+                    <CodeRow
+                      key={code.id}
+                      code={code}
+                      onActivate={handleActivate}
+                      isLoading={isLoading}
+                    />
                   ))}
                 </div>
               </div>
@@ -231,7 +302,12 @@ export default function CodesPage() {
                 </h3>
                 <div className="space-y-2">
                   {usedCodes.map((code) => (
-                    <CodeRow key={code.id} code={code} />
+                    <CodeRow
+                      key={code.id}
+                      code={code}
+                      onActivate={handleActivate}
+                      isLoading={isLoading}
+                    />
                   ))}
                 </div>
               </div>

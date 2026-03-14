@@ -13,6 +13,7 @@ interface UseCodesReturn {
   purchasePackage: (packageType: string) => Promise<void>;
   devPurchase: (packageType: string) => Promise<Purchase | null>;
   redeemCode: (code: string) => Promise<{ success: boolean; message: string }>;
+  activateCode: (codeId: string) => Promise<{ success: boolean; message: string }>;
   fetchCodes: () => Promise<void>;
   fetchPackages: () => Promise<void>;
   getPurchase: (purchaseId: string) => Promise<Purchase | null>;
@@ -99,6 +100,22 @@ export function useCodes(): UseCodesReturn {
     }
   }, [fetchCodes]);
 
+  const activateCode = useCallback(async (codeId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await api.post<{ status: string; message: string }>(`/codes/activate/${codeId}`, {});
+      await fetchCodes();
+      return { success: true, message: result.message };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Code konnte nicht aktiviert werden";
+      setError(msg);
+      return { success: false, message: msg };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchCodes]);
+
   const getPurchase = useCallback(async (purchaseId: string): Promise<Purchase | null> => {
     try {
       return await api.get<Purchase>(`/codes/purchase/${purchaseId}`);
@@ -121,6 +138,7 @@ export function useCodes(): UseCodesReturn {
     purchasePackage,
     devPurchase,
     redeemCode,
+    activateCode,
     fetchCodes,
     fetchPackages,
     getPurchase,
