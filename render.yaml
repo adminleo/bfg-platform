@@ -17,7 +17,7 @@ services:
           name: bfg-db
           property: connectionString
       - key: ENVIRONMENT
-        value: production
+        value: demo
       - key: DEBUG
         value: "false"
       - key: SECRET_KEY

@@ -226,7 +226,7 @@ function ResourcesPageContent() {
   const isDev =
     process.env.NODE_ENV === "development" ||
     (typeof window !== "undefined" &&
-      window.location.hostname === "localhost");
+      (window.location.hostname === "localhost" || window.location.hostname.includes("vercel.app")));
 
   const purchaseCount = codes.length;
 

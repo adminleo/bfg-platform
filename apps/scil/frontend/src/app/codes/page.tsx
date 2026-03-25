@@ -133,7 +133,7 @@ export default function CodesPage() {
   const [redeemError, setRedeemError] = useState<string | null>(null);
   const [redeemSuccess, setRedeemSuccess] = useState<string | null>(null);
 
-  const isDev = process.env.NODE_ENV === "development" || typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  const isDev = process.env.NODE_ENV === "development" || typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel.app'));
   const activeCodes = codes.filter((c) => ["emitted", "sold", "activated"].includes(c.status));
   const usedCodes = codes.filter((c) => ["consumed", "expired"].includes(c.status));
 

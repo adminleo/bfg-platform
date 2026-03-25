@@ -147,8 +147,8 @@ def create_payment_routes(
         Only available when ENVIRONMENT=development.
         """
         from app.config import settings
-        if settings.environment != "development":
-            raise HTTPException(status_code=403, detail="Only available in development mode")
+        if settings.environment not in ("development", "demo"):
+            raise HTTPException(status_code=403, detail="Only available in development/demo mode")
 
         try:
             package_type = CodePackageType(body.package_type)
