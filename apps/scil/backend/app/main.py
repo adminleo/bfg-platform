@@ -139,6 +139,35 @@ async def lifespan(app: FastAPI):
         count = await seed_training_content(session)
         logger.info("Training content seeded: %d new items", count)
 
+    # Seed demo users (idempotent)
+    from passlib.context import CryptContext
+    from bfg_core.models.user import User
+    from sqlalchemy import select
+    _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    demo_users = [
+        {"email": "coach@scil.dev", "password": "Coach1234", "full_name": "Max Coach", "role": "coach"},
+        {"email": "coachee@scil.dev", "password": "Coachee1234", "full_name": "Lisa Coachee", "role": "trainee"},
+    ]
+    async with async_session() as session:
+        for u in demo_users:
+            result = await session.execute(select(User).where(User.email == u["email"]))
+            existing = result.scalar_one_or_none()
+            if existing:
+                if existing.role != u["role"]:
+                    existing.role = u["role"]
+                    await session.commit()
+                    logger.info("Demo user %s role updated to %s", u["email"], u["role"])
+            else:
+                user = User(
+                    email=u["email"],
+                    hashed_password=_pwd.hash(u["password"]),
+                    full_name=u["full_name"],
+                    role=u["role"],
+                )
+                session.add(user)
+                await session.commit()
+                logger.info("Demo user %s created with role %s", u["email"], u["role"])
+
     yield
 
     await engine.dispose()
