@@ -1,26 +1,57 @@
-"""SCIL Training Content Library — Seed data for daily micro-training modules.
+"""SCIL Training Content Library — Seed data for training modules.
 
-Provides a baseline library of training content mapped to the 4 SCIL areas
+Provides a comprehensive library of training content mapped to the 4 SCIL areas
 and their 16 frequencies. Content is structured for AI-personalized delivery.
+
+Authors:
+    - Andreas Bornhaeusser (primary, SCIL creator)
+    - Stefan Reuter (body language & presence expert)
+    - Wolfgang Stockhausen (communication & rhetoric expert)
 """
 
-# Content items: each dict maps to a LearningContent record
-# Format: slug, title, description, content_type, area, target_frequency,
-#          difficulty, duration_minutes, body (markdown/structure), tags
+# ---------------------------------------------------------------------------
+# Author profiles
+# ---------------------------------------------------------------------------
+
+AUTHORS = {
+    "andreas_bornhaeusser": {
+        "name": "Andreas Bornhaeusser",
+        "bio": "Gruender der SCIL Performance Academy und Entwickler des SCIL-Modells. Experte fuer Wirkungskompetenz und persoenliche Entwicklung mit ueber 20 Jahren Erfahrung in Executive Coaching.",
+        "image_url": None,
+    },
+    "stefan_reuter": {
+        "name": "Stefan Reuter",
+        "bio": "Spezialist fuer Koerpersprache, Praesenz und nonverbale Kommunikation. Langjaehrer Trainer und Coach fuer Fuehrungskraefte im Bereich Auftrittskompetenz.",
+        "image_url": None,
+    },
+    "wolfgang_stockhausen": {
+        "name": "Wolfgang Stockhausen",
+        "bio": "Experte fuer Rhetorik, Storytelling und sprachliche Wirkung. Dozent fuer Kommunikation und Autor mehrerer Fachbuecher zum Thema wirkungsvolle Gespraechsfuehrung.",
+        "image_url": None,
+    },
+}
+
+
+# ---------------------------------------------------------------------------
+# Content Library — Expanded with authors, lessons, premium tiers
+# ---------------------------------------------------------------------------
 
 TRAINING_CONTENT_LIBRARY: list[dict] = [
-    # -----------------------------------------------------------------------
-    # SENSUS — Beziehung & Emotion
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # SENSUS — Beziehung & Emotion (Author: Andreas Bornhaeusser)
+    # ===================================================================
     {
         "slug": "sensus-empathy-reflection",
         "title": "Empathie im Alltag",
         "description": "Reflektiere deine empathischen Reaktionen in Alltagssituationen und staerke dein Einfuehlungsvermoegen.",
         "content_type": "reflection",
         "area": "sensus",
-        "target_frequency": "S01",
+        "target_frequency": "innere_praesenz",
         "difficulty": 1,
         "duration_minutes": 10,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 1,
         "body": {
             "instruction": "Denke an eine Situation heute, in der jemand eine starke Emotion gezeigt hat. Wie hast du reagiert? Was haettest du anders machen koennen?",
             "prompts": [
@@ -38,9 +69,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Uebung zur Verbesserung deiner Zuhoerqualitaet in Gespraechen.",
         "content_type": "exercise",
         "area": "sensus",
-        "target_frequency": "S02",
+        "target_frequency": "innere_ueberzeugung",
         "difficulty": 2,
         "duration_minutes": 15,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 2,
         "body": {
             "instruction": "Fuehre heute ein bewusstes Gespraech, in dem du nur zuhoerst. Keine Ratschlaege, kein Unterbrechen.",
             "steps": [
@@ -60,9 +94,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Lerne deine eigenen Emotionen besser zu erkennen und zu benennen.",
         "content_type": "exercise",
         "area": "sensus",
-        "target_frequency": "S03",
+        "target_frequency": "prozessfokussierung",
         "difficulty": 1,
         "duration_minutes": 10,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 3,
         "body": {
             "instruction": "Emotionales Check-in: Nimm dir 5 Minuten Zeit und scanne deinen emotionalen Zustand.",
             "steps": [
@@ -82,9 +119,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Strategien zum Aufbau von Vertrauen in beruflichen Beziehungen.",
         "content_type": "article",
         "area": "sensus",
-        "target_frequency": "S04",
+        "target_frequency": "emotionalitaet",
         "difficulty": 2,
         "duration_minutes": 8,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 4,
         "body": {
             "content_markdown": (
                 "## Vertrauen aufbauen\n\n"
@@ -100,19 +140,58 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         },
         "tags": ["vertrauen", "beziehung", "fuehrung"],
     },
+    {
+        "slug": "sensus-deep-connection",
+        "title": "Tiefe Verbindungen aufbauen",
+        "description": "Ein vertieftes 5-Lektionen Programm zur Staerkung emotionaler Intelligenz und zwischenmenschlicher Beziehungen im beruflichen Kontext.",
+        "content_type": "article",
+        "area": "sensus",
+        "target_frequency": "innere_praesenz",
+        "difficulty": 3,
+        "duration_minutes": 60,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": True,
+        "price_cents": 4900,
+        "sort_order": 10,
+        "body": {
+            "content_markdown": (
+                "## Tiefe Verbindungen aufbauen — Kursueberblick\n\n"
+                "In diesem 5-teiligen Kurs lernst du, wie du authentische und tiefe "
+                "Verbindungen in deinem beruflichen Umfeld aufbaust.\n\n"
+                "### Was dich erwartet:\n"
+                "- Lektion 1: Die Grundlagen emotionaler Praesenz\n"
+                "- Lektion 2: Verletzlichkeit als Staerke\n"
+                "- Lektion 3: Empathisches Feedback geben\n"
+                "- Lektion 4: Konflikte als Beziehungschance\n"
+                "- Lektion 5: Integration und Praxistransfer\n\n"
+                "Jede Lektion verbindet Theorie mit praktischen Uebungen."
+            ),
+            "lessons_overview": [
+                "Die Grundlagen emotionaler Praesenz",
+                "Verletzlichkeit als Staerke",
+                "Empathisches Feedback geben",
+                "Konflikte als Beziehungschance",
+                "Integration und Praxistransfer",
+            ],
+        },
+        "tags": ["vertiefung", "emotionale-intelligenz", "premium", "kurs"],
+    },
 
-    # -----------------------------------------------------------------------
-    # CORPUS — Koerpersprache & Praesenz
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # CORPUS — Koerpersprache & Praesenz (Author: Stefan Reuter)
+    # ===================================================================
     {
         "slug": "corpus-power-posing",
         "title": "Koerpersprache und Praesenz",
         "description": "Uebung zur bewussten Koerpersprache fuer mehr Praesenz und Selbstvertrauen.",
         "content_type": "exercise",
         "area": "corpus",
-        "target_frequency": "C01",
+        "target_frequency": "erscheinungsbild",
         "difficulty": 1,
         "duration_minutes": 10,
+        "author": "Stefan Reuter",
+        "is_premium": False,
+        "sort_order": 1,
         "body": {
             "instruction": "Praesenz-Uebung: Nutze deine Koerpersprache bewusst, um Praesenz zu zeigen.",
             "steps": [
@@ -131,9 +210,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Box-Breathing: Eine einfache Atemtechnik fuer sofortige Beruhigung.",
         "content_type": "exercise",
         "area": "corpus",
-        "target_frequency": "C02",
+        "target_frequency": "mimik",
         "difficulty": 1,
         "duration_minutes": 5,
+        "author": "Stefan Reuter",
+        "is_premium": False,
+        "sort_order": 2,
         "body": {
             "instruction": "Box-Breathing: 4-4-4-4 Atemtechnik",
             "steps": [
@@ -153,9 +235,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Lerne, deine koerperliche Energie bewusst zu steuern.",
         "content_type": "reflection",
         "area": "corpus",
-        "target_frequency": "C03",
+        "target_frequency": "gestik",
         "difficulty": 2,
         "duration_minutes": 10,
+        "author": "Stefan Reuter",
+        "is_premium": False,
+        "sort_order": 3,
         "body": {
             "instruction": "Energie-Tagebuch: Tracke dein Energielevel ueber den Tag.",
             "prompts": [
@@ -174,9 +259,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Schaerfe deine Wahrnehmung fuer die Koerpersprache anderer.",
         "content_type": "exercise",
         "area": "corpus",
-        "target_frequency": "C04",
+        "target_frequency": "raeumliche_praesenz",
         "difficulty": 3,
         "duration_minutes": 12,
+        "author": "Stefan Reuter",
+        "is_premium": False,
+        "sort_order": 4,
         "body": {
             "instruction": "Beobachtungsuebung: Achte heute in 3 Gespraechen bewusst auf nonverbale Signale.",
             "observation_points": [
@@ -184,25 +272,64 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
                 "Blickkontakt (viel/wenig)",
                 "Gestik (lebendig/zurueckhaltend)",
                 "Gesichtsausdruck (kongruent zur Aussage?)",
-                "Rauemliches Verhalten (Naehe/Distanz)",
+                "Raeumliches Verhalten (Naehe/Distanz)",
             ],
             "reflection_prompt": "Was hast du bemerkt, das dir sonst entgangen waere?",
         },
         "tags": ["koerpersprache", "beobachtung", "nonverbal"],
     },
+    {
+        "slug": "corpus-stage-presence",
+        "title": "Buehnen-Praesenz Meisterkurs",
+        "description": "Lerne die Geheimnisse wirkungsvoller Buehnen- und Raumpraesenz. Ein praxisorientierter Kurs mit Video-Anleitungen und taeglichen Uebungen.",
+        "content_type": "video",
+        "area": "corpus",
+        "target_frequency": "raeumliche_praesenz",
+        "difficulty": 3,
+        "duration_minutes": 90,
+        "author": "Stefan Reuter",
+        "is_premium": True,
+        "price_cents": 7900,
+        "sort_order": 10,
+        "body": {
+            "content_markdown": (
+                "## Buehnen-Praesenz Meisterkurs\n\n"
+                "Dieser praxisorientierte Kurs vermittelt dir die Techniken, die "
+                "Top-Speaker und Fuehrungskraefte nutzen, um Raeume zu fuellen.\n\n"
+                "### Kursinhalt:\n"
+                "- Lektion 1: Raumwahrnehmung und Positionierung\n"
+                "- Lektion 2: Gang und Bewegung auf der Buehne\n"
+                "- Lektion 3: Blickkontakt und Publikumssteuerung\n"
+                "- Lektion 4: Gestik mit Wirkung\n"
+                "- Lektion 5: Dein 2-Minuten Auftritt\n\n"
+                "Inklusive Video-Demos und Uebungsblaetter."
+            ),
+            "lessons_overview": [
+                "Raumwahrnehmung und Positionierung",
+                "Gang und Bewegung auf der Buehne",
+                "Blickkontakt und Publikumssteuerung",
+                "Gestik mit Wirkung",
+                "Dein 2-Minuten Auftritt",
+            ],
+        },
+        "tags": ["praesenz", "buehne", "premium", "kurs", "video"],
+    },
 
-    # -----------------------------------------------------------------------
-    # INTELLEKTUS — Logik & Struktur
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # INTELLEKTUS — Logik & Struktur (Author: Andreas Bornhaeusser)
+    # ===================================================================
     {
         "slug": "intellektus-decision-framework",
         "title": "Entscheidungs-Framework",
         "description": "Strukturiertes Vorgehen fuer bessere Entscheidungen.",
         "content_type": "exercise",
         "area": "intellektus",
-        "target_frequency": "I01",
+        "target_frequency": "sachlichkeit",
         "difficulty": 2,
         "duration_minutes": 15,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 1,
         "body": {
             "instruction": "Wende das 10-10-10 Framework auf eine anstehende Entscheidung an.",
             "steps": [
@@ -221,9 +348,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Uebung zum Hinterfragen von Annahmen und Denkmustern.",
         "content_type": "reflection",
         "area": "intellektus",
-        "target_frequency": "I02",
+        "target_frequency": "analytik",
         "difficulty": 3,
         "duration_minutes": 12,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 2,
         "body": {
             "instruction": "Annahmen-Check: Hinterfrage eine deiner Ueberzeugungen.",
             "prompts": [
@@ -242,9 +372,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Komme der Ursache eines Problems auf den Grund.",
         "content_type": "exercise",
         "area": "intellektus",
-        "target_frequency": "I03",
+        "target_frequency": "struktur",
         "difficulty": 2,
         "duration_minutes": 10,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 3,
         "body": {
             "instruction": "5-Why Methode: Frage 5 Mal 'Warum?', um die Kernursache zu finden.",
             "steps": [
@@ -265,9 +398,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Uebe strategisches Denken anhand realer Szenarien.",
         "content_type": "article",
         "area": "intellektus",
-        "target_frequency": "I04",
+        "target_frequency": "zielorientierung",
         "difficulty": 3,
         "duration_minutes": 10,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 4,
         "body": {
             "content_markdown": (
                 "## Strategisches Denken trainieren\n\n"
@@ -284,26 +420,64 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         },
         "tags": ["strategie", "planung", "langfristig"],
     },
+    {
+        "slug": "intellektus-systems-thinking",
+        "title": "Systemisches Denken fuer Fuehrungskraefte",
+        "description": "Entwickle systemisches Denken um komplexe Zusammenhaenge zu verstehen und bessere Entscheidungen zu treffen.",
+        "content_type": "article",
+        "area": "intellektus",
+        "target_frequency": "analytik",
+        "difficulty": 4,
+        "duration_minutes": 75,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": True,
+        "price_cents": 5900,
+        "sort_order": 10,
+        "body": {
+            "content_markdown": (
+                "## Systemisches Denken fuer Fuehrungskraefte\n\n"
+                "Dieser Kurs vermittelt dir die Werkzeuge des systemischen Denkens "
+                "fuer komplexe Entscheidungssituationen.\n\n"
+                "### Kursinhalt:\n"
+                "- Lektion 1: Lineare vs. Systemische Perspektive\n"
+                "- Lektion 2: Feedback-Schleifen erkennen\n"
+                "- Lektion 3: Hebelpunkte identifizieren\n"
+                "- Lektion 4: Unbeabsichtigte Konsequenzen\n"
+                "- Lektion 5: Systemische Intervention\n"
+            ),
+            "lessons_overview": [
+                "Lineare vs. Systemische Perspektive",
+                "Feedback-Schleifen erkennen",
+                "Hebelpunkte identifizieren",
+                "Unbeabsichtigte Konsequenzen",
+                "Systemische Intervention",
+            ],
+        },
+        "tags": ["systeme", "fuehrung", "premium", "kurs"],
+    },
 
-    # -----------------------------------------------------------------------
-    # LINGUA — Sprache & Ausdruck
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # LINGUA — Sprache & Ausdruck (Author: Wolfgang Stockhausen)
+    # ===================================================================
     {
         "slug": "lingua-clear-communication",
         "title": "Klar kommunizieren",
-        "description": "Uebung fuer praeziese und verstaendliche Kommunikation.",
+        "description": "Uebung fuer praezise und verstaendliche Kommunikation.",
         "content_type": "exercise",
         "area": "lingua",
-        "target_frequency": "L01",
+        "target_frequency": "stimme",
         "difficulty": 2,
         "duration_minutes": 10,
+        "author": "Wolfgang Stockhausen",
+        "is_premium": False,
+        "sort_order": 1,
         "body": {
             "instruction": "Die 30-Sekunden-Regel: Bringe deine Kernbotschaft in 30 Sekunden auf den Punkt.",
             "steps": [
                 "Waehle ein Thema, das du jemandem erklaeren moechtest",
                 "Formuliere die Kernbotschaft in einem Satz",
                 "Ergaenze maximal 2 Unterstuetzungspunkte",
-                "Ueebe laut (Timer: 30 Sekunden)",
+                "Uebe laut (Timer: 30 Sekunden)",
                 "Kuerze, bis es passt",
             ],
             "tip": "Wenn du es nicht in 30 Sekunden erklaeren kannst, verstehst du es noch nicht gut genug.",
@@ -316,9 +490,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Lerne konstruktives Feedback mit dem Situation-Behavior-Impact Modell.",
         "content_type": "exercise",
         "area": "lingua",
-        "target_frequency": "L02",
+        "target_frequency": "artikulation",
         "difficulty": 2,
         "duration_minutes": 12,
+        "author": "Wolfgang Stockhausen",
+        "is_premium": False,
+        "sort_order": 2,
         "body": {
             "instruction": "SBI-Feedback Uebung: Formuliere ein konkretes Feedback.",
             "steps": [
@@ -337,9 +514,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Nutze die Kraft von Geschichten fuer wirkungsvolle Kommunikation.",
         "content_type": "article",
         "area": "lingua",
-        "target_frequency": "L03",
+        "target_frequency": "beredsamkeit",
         "difficulty": 3,
         "duration_minutes": 10,
+        "author": "Wolfgang Stockhausen",
+        "is_premium": False,
+        "sort_order": 3,
         "body": {
             "content_markdown": (
                 "## Storytelling im Business\n\n"
@@ -362,9 +542,12 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "description": "Bessere Fragen stellen fuer tiefere Gespraeche und Erkenntnisse.",
         "content_type": "exercise",
         "area": "lingua",
-        "target_frequency": "L04",
+        "target_frequency": "bildhaftigkeit",
         "difficulty": 2,
         "duration_minutes": 10,
+        "author": "Wolfgang Stockhausen",
+        "is_premium": False,
+        "sort_order": 4,
         "body": {
             "instruction": "Fragen-Upgrade: Verwandle geschlossene in offene Fragen.",
             "examples": [
@@ -376,10 +559,48 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         },
         "tags": ["fragen", "kommunikation", "coaching"],
     },
+    {
+        "slug": "lingua-rhetoric-masterclass",
+        "title": "Rhetorische Meisterschaft",
+        "description": "Von Grundlagen bis Fortgeschritten: Entwickle deine rhetorischen Faehigkeiten fuer Praesentationen, Verhandlungen und Ueberzeugungsgespraeche.",
+        "content_type": "video",
+        "area": "lingua",
+        "target_frequency": "beredsamkeit",
+        "difficulty": 3,
+        "duration_minutes": 120,
+        "author": "Wolfgang Stockhausen",
+        "is_premium": True,
+        "price_cents": 8900,
+        "sort_order": 10,
+        "body": {
+            "content_markdown": (
+                "## Rhetorische Meisterschaft\n\n"
+                "Dieser umfassende Kurs entwickelt deine rhetorischen Faehigkeiten "
+                "von solide zu exzellent.\n\n"
+                "### 6 Lektionen:\n"
+                "- Lektion 1: Die Architektur einer Rede\n"
+                "- Lektion 2: Sprachbilder und Metaphern\n"
+                "- Lektion 3: Emotionale Resonanz erzeugen\n"
+                "- Lektion 4: Argumentation und Ueberzeugung\n"
+                "- Lektion 5: Improvisation und Schlagfertigkeit\n"
+                "- Lektion 6: Dein persoenlicher Rede-Stil\n\n"
+                "Mit Video-Demos, Uebungen und persoenlichem Feedback."
+            ),
+            "lessons_overview": [
+                "Die Architektur einer Rede",
+                "Sprachbilder und Metaphern",
+                "Emotionale Resonanz erzeugen",
+                "Argumentation und Ueberzeugung",
+                "Improvisation und Schlagfertigkeit",
+                "Dein persoenlicher Rede-Stil",
+            ],
+        },
+        "tags": ["rhetorik", "praesentation", "premium", "kurs", "video"],
+    },
 
-    # -----------------------------------------------------------------------
-    # GENERAL — Cross-Area Content
-    # -----------------------------------------------------------------------
+    # ===================================================================
+    # GENERAL — Cross-Area Content (Author: Andreas Bornhaeusser)
+    # ===================================================================
     {
         "slug": "general-weekly-review",
         "title": "Wochen-Reflexion",
@@ -389,6 +610,9 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "target_frequency": None,
         "difficulty": 1,
         "duration_minutes": 15,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 1,
         "body": {
             "instruction": "Wochen-Reflexion: Schau zurueck und plane voraus.",
             "prompts": [
@@ -410,6 +634,9 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
         "target_frequency": None,
         "difficulty": 1,
         "duration_minutes": 5,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 2,
         "body": {
             "instruction": "Setze eine Intention fuer den heutigen Tag.",
             "prompts": [
@@ -419,6 +646,35 @@ TRAINING_CONTENT_LIBRARY: list[dict] = [
             ],
         },
         "tags": ["morgenroutine", "intention", "achtsamkeit"],
+    },
+    {
+        "slug": "general-scil-integration",
+        "title": "SCIL im Alltag integrieren",
+        "description": "Praktische Tipps zur Integration aller SCIL-Bereiche in deinen Berufsalltag.",
+        "content_type": "article",
+        "area": "general",
+        "target_frequency": None,
+        "difficulty": 2,
+        "duration_minutes": 12,
+        "author": "Andreas Bornhaeusser",
+        "is_premium": False,
+        "sort_order": 3,
+        "body": {
+            "content_markdown": (
+                "## SCIL im Alltag integrieren\n\n"
+                "Die 4 SCIL-Bereiche sind nicht isoliert — sie wirken zusammen.\n\n"
+                "### Taegliche Integration:\n"
+                "**Morgens:** Setze eine Sensus-Intention (Beziehung)\n"
+                "**Vor Meetings:** Corpus-Check (Koerperhaltung)\n"
+                "**Waehrend Arbeit:** Intellektus-Fokus (Struktur)\n"
+                "**In Gespraechen:** Lingua-Bewusstsein (Wortwahl)\n\n"
+                "### Die 4-Minuten-Regel:\n"
+                "Nimm dir vor jedem wichtigen Kontakt 4 Minuten — "
+                "eine Minute pro SCIL-Bereich. Wie stehst du? "
+                "Was fuehlst du? Was denkst du? Was sagst du?"
+            ),
+        },
+        "tags": ["integration", "alltag", "praxis"],
     },
 ]
 
@@ -434,8 +690,29 @@ async def seed_training_content(db) -> int:
         result = await db.execute(
             select(LearningContent).where(LearningContent.slug == item["slug"])
         )
-        if result.scalar_one_or_none():
+        existing = result.scalar_one_or_none()
+        if existing:
+            # Update author info on existing records
+            if item.get("author") and not existing.author:
+                existing.author = item["author"]
+                for _, profile in AUTHORS.items():
+                    if profile["name"] == item["author"]:
+                        existing.author_bio = profile["bio"]
+                        break
+                existing.is_premium = item.get("is_premium", False)
+                existing.price_cents = item.get("price_cents")
+                existing.sort_order = item.get("sort_order", 0)
             continue
+
+        # Look up author details
+        author_bio = None
+        author_image = None
+        if item.get("author"):
+            for _, profile in AUTHORS.items():
+                if profile["name"] == item["author"]:
+                    author_bio = profile["bio"]
+                    author_image = profile["image_url"]
+                    break
 
         content = LearningContent(
             slug=item["slug"],
@@ -449,6 +726,12 @@ async def seed_training_content(db) -> int:
             body=item.get("body", {}),
             video_url=item.get("video_url"),
             tags=item.get("tags", []),
+            author=item.get("author"),
+            author_bio=author_bio,
+            author_image_url=author_image,
+            is_premium=item.get("is_premium", False),
+            price_cents=item.get("price_cents"),
+            sort_order=item.get("sort_order", 0),
         )
         db.add(content)
         count += 1

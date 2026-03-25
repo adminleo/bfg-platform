@@ -3,11 +3,11 @@
 import type { Booking } from "@/lib/types";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  requested: { label: "Ausstehend", color: "text-amber-400", bg: "bg-amber-400/10" },
-  confirmed: { label: "Bestaetigt", color: "text-green-400", bg: "bg-green-400/10" },
-  cancelled: { label: "Abgesagt", color: "text-red-400", bg: "bg-red-400/10" },
-  completed: { label: "Abgeschlossen", color: "text-blue-400", bg: "bg-blue-400/10" },
-  no_show: { label: "Nicht erschienen", color: "text-slate-400", bg: "bg-slate-400/10" },
+  requested: { label: "Ausstehend", color: "text-amber-600", bg: "bg-amber-50" },
+  confirmed: { label: "Bestaetigt", color: "text-green-600", bg: "bg-green-50" },
+  cancelled: { label: "Abgesagt", color: "text-red-600", bg: "bg-red-50" },
+  completed: { label: "Abgeschlossen", color: "text-blue-600", bg: "bg-blue-50" },
+  no_show: { label: "Nicht erschienen", color: "text-slate-500", bg: "bg-slate-50" },
 };
 
 interface BookingsSidebarProps {
@@ -48,26 +48,26 @@ export function BookingsSidebar({
       {/* Stats */}
       <div className="px-4 pb-3 grid grid-cols-2 gap-2">
         <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
-          <div className="text-lg font-bold text-amber-400 stat-number">{pendingCount}</div>
-          <div className="text-[10px] text-slate-400">Ausstehend</div>
+          <div className="text-lg font-bold text-amber-600 stat-number">{pendingCount}</div>
+          <div className="text-[10px] text-slate-500">Ausstehend</div>
         </div>
         <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
-          <div className="text-lg font-bold text-green-400 stat-number">{confirmedCount}</div>
-          <div className="text-[10px] text-slate-400">Bestaetigt</div>
+          <div className="text-lg font-bold text-green-600 stat-number">{confirmedCount}</div>
+          <div className="text-[10px] text-slate-500">Bestaetigt</div>
         </div>
         <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
-          <div className="text-lg font-bold text-blue-400 stat-number">{completedCount}</div>
-          <div className="text-[10px] text-slate-400">Abgeschlossen</div>
+          <div className="text-lg font-bold text-blue-600 stat-number">{completedCount}</div>
+          <div className="text-[10px] text-slate-500">Abgeschlossen</div>
         </div>
         <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
           <div className="text-lg font-bold text-slate-900 stat-number">{isCoach ? slotsCount : (upcomingBookings.length > 0 ? upcomingBookings.length : "--")}</div>
-          <div className="text-[10px] text-slate-400">{isCoach ? "Slots" : "Kommend"}</div>
+          <div className="text-[10px] text-slate-500">{isCoach ? "Slots" : "Kommend"}</div>
         </div>
       </div>
 
       {/* Status filter */}
       <div className="px-4 pb-3">
-        <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Filter</div>
+        <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Filter</div>
         <div className="flex flex-wrap gap-1.5">
           {["", "requested", "confirmed", "completed", "cancelled"].map((st) => (
             <button
@@ -87,11 +87,11 @@ export function BookingsSidebar({
 
       {/* Upcoming mini list */}
       <div className="px-4 pb-3 flex-1 overflow-y-auto">
-        <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
           Naechste Sessions
         </div>
         {upcomingBookings.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-4">Keine kommenden Sessions</p>
+          <p className="text-xs text-slate-500 text-center py-4">Keine kommenden Sessions</p>
         ) : (
           <div className="space-y-1.5">
             {upcomingBookings.slice(0, 5).map((b) => {
@@ -105,11 +105,11 @@ export function BookingsSidebar({
                     <span className="text-xs font-medium text-slate-900 truncate">
                       {b.topic || "Coaching-Session"}
                     </span>
-                    <span className={`text-[10px] ${statusCfg?.color || "text-slate-400"}`}>
+                    <span className={`text-[10px] ${statusCfg?.color || "text-slate-500"}`}>
                       {statusCfg?.label || b.status}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5">
                     {dateStr} &middot; {timeStr} Uhr &middot; {b.duration_minutes} Min.
                   </div>
                 </div>

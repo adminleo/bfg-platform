@@ -316,6 +316,10 @@ class BookingService:
         stmt = (
             select(Booking)
             .where(Booking.coach_id == coach_id)
+            .options(
+                selectinload(Booking.briefing),
+                selectinload(Booking.slot),
+            )
             .order_by(Booking.scheduled_at.desc())
         )
         if status_filter:
@@ -336,6 +340,10 @@ class BookingService:
         stmt = (
             select(Booking)
             .where(Booking.coachee_id == coachee_id)
+            .options(
+                selectinload(Booking.briefing),
+                selectinload(Booking.slot),
+            )
             .order_by(Booking.scheduled_at.desc())
         )
         result = await db.execute(stmt)
@@ -369,6 +377,10 @@ class BookingService:
                 or_(Booking.coach_id == user_id, Booking.coachee_id == user_id),
                 Booking.scheduled_at >= now,
                 Booking.status.in_([BookingStatus.REQUESTED, BookingStatus.CONFIRMED]),
+            )
+            .options(
+                selectinload(Booking.briefing),
+                selectinload(Booking.slot),
             )
             .order_by(Booking.scheduled_at)
             .limit(limit)

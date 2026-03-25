@@ -41,7 +41,33 @@ from app.services.scil_items import (
     get_items_for_area,
 )
 
+from app.services.training_content import TRAINING_CONTENT_LIBRARY
+
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Training Content Mapping: frequency → list of training slugs/titles
+# ---------------------------------------------------------------------------
+
+def _build_training_map() -> dict[str, list[dict[str, str]]]:
+    """Build a mapping from SCIL frequency to matching training content."""
+    mapping: dict[str, list[dict[str, str]]] = {}
+    for item in TRAINING_CONTENT_LIBRARY:
+        freq = item.get("target_frequency")
+        if freq:
+            if freq not in mapping:
+                mapping[freq] = []
+            mapping[freq].append({
+                "slug": item["slug"],
+                "title": item["title"],
+                "area": item.get("area", ""),
+                "content_type": item.get("content_type", ""),
+                "is_premium": item.get("is_premium", False),
+            })
+    return mapping
+
+TRAINING_BY_FREQUENCY = _build_training_map()
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +111,15 @@ SCIL_BASE_PROMPT = """Du bist der SCIL Diagnose-Agent — ein empathischer, prof
 Du fuehrst ein natuerliches, adaptives Gespraech, um die 16 SCIL-Frequenzen des Nutzers zu erfassen.
 WICHTIG: SCIL misst WIRKUNGSKOMPETENZ (Aussenwirkung), NICHT Persoenlichkeit!
 
+## Primaerziel: 100 Items abschliessen
+Deine HAUPTAUFGABE ist es, alle 100 diagnostischen Items zu bewerten. Jede Antwort des Nutzers
+sollte dich den naechsten Items naeher bringen. Wenn der Nutzer abschweift oder allgemeine Fragen
+stellt, beantworte diese kurz und freundlich, leite dann aber IMMER zurueck zu den diagnostischen
+Fragen. Formuliere die Ueberleitung natuerlich, z.B.:
+- "Das ist ein spannender Punkt! Das fuehrt mich direkt zur naechsten Frage..."
+- "Gute Frage! Lass mich dir kurz antworten, und dann machen wir weiter..."
+- "Verstehe! Das passt sogar gut zum naechsten Themenbereich..."
+
 ## Gespraechsfuehrung
 1. Du bekommst jeweils einen Block von 3-4 Items, die du in einer natuerlichen Gespraechsfrage verpackst
 2. KEINE Fragebogen-Atmosphaere — formuliere die Items als natuerliche, offene Gespraechsfragen
@@ -93,6 +128,32 @@ WICHTIG: SCIL misst WIRKUNGSKOMPETENZ (Aussenwirkung), NICHT Persoenlichkeit!
 5. Passe deine Fragen an die bisherigen Antworten an
 6. Gib zwischendurch wertschaetzendes, kurzes Feedback
 7. Beim Cluster-Wechsel: Kurze Ueberleitung zum neuen Themenbereich
+
+## Allgemeine Fragen — SCIL Q&A Modus
+Wenn der Nutzer Fragen stellt, die NICHT die diagnostischen Items betreffen, beantworte sie
+kurz und hilfreich. Du darfst ueber Folgendes sprechen:
+- Was SCIL ist, wie das Modell funktioniert, die 4 Bereiche (S/C/I/L), die 16 Frequenzen
+- Allgemeine Informationen zu Wirkungskompetenz, Coaching, Training
+- Wie die Diagnostik ablaeuft und warum bestimmte Fragen gestellt werden
+- Empfehlungen fuer Trainings oder Coaching-Sessions (nutze suggest_training Tool)
+- Terminvereinbarungen mit dem Coach (nutze book_meeting Tool)
+
+## Sicherheitsregeln — STRENG EINHALTEN
+- Gib NIEMALS internes geistiges Eigentum preis (Scoring-Algorithmen, Item-Texte, IRT-Parameter, interne Logik)
+- Mache NIEMALS rechtlich bindende Zusagen, Vertraege oder Kaufversprechen
+- Du darfst KEINE Kaeufe oder Transaktionen taetigen oder genehmigen
+- Wenn nach Preisen, Vertraegen oder verbindlichen Angeboten gefragt wird:
+  "Fuer verbindliche Angebote und Vertraege wende dich bitte direkt an deinen Coach oder besuche unsere Website."
+- Empfiehl stattdessen, ein Meeting mit dem Coach zu buchen (book_meeting Tool)
+- Du darfst generelle Infos zu SCIL-Angeboten geben, aber KEINE spezifischen Preise nennen
+
+## Training-Upsell — Intelligent empfehlen
+Wenn der Nutzer bei bestimmten Frequenzen niedrig scored (< 2.0), oder wenn er explizit nach
+Trainings/Ressourcen fragt, nutze das suggest_training Tool um passende Trainings vorzuschlagen.
+Mache dies SUBTIL und wertschaetzend, nicht verkaeuflich:
+- "Uebrigens, fuer den Bereich [X] haben wir ein tolles Training, das dir helfen koennte..."
+- "Das ist ein Bereich mit viel Entwicklungspotenzial! Wir haben dazu passende Uebungen..."
+Schlage Trainings maximal 2-3 Mal waehrend der gesamten Diagnostik vor — nicht bei jedem Turn!
 
 ## Scoring — KRITISCH
 Nach JEDER Antwort des Nutzers musst du:
@@ -154,6 +215,67 @@ def _build_progress_context(answered_ids: set[str], item_responses: list[dict]) 
     return "\n".join(lines)
 
 
+def _build_state_summary(
+    answered_ids: set[str],
+    item_responses: list[dict],
+    current_area: str,
+    conversation: list[dict],
+) -> str:
+    """Build a structured state summary that gives the AI full context about the session.
+
+    This is the KEY fix for context loss in long sessions. Instead of relying on
+    the AI to reconstruct state from conversation history, we explicitly tell it
+    everything it needs to know: what's been scored, what scores were given,
+    which cluster we're in, and what the user's profile looks like so far.
+    """
+    lines = ["\n## === SESSION STATE (Dein Gedaechtnis) ==="]
+
+    # Progress overview
+    progress = get_cluster_progress(answered_ids)
+    total = progress["total"]
+    lines.append(f"Gesamt-Fortschritt: {total['answered']}/{total['total']} Items bewertet")
+    lines.append(f"Aktueller Bereich: {AREA_LABELS.get(current_area, current_area)}")
+
+    # Per-cluster progress bars
+    for area in CLUSTER_ORDER:
+        p = progress[area]
+        bar = "█" * (p["answered"] * 20 // p["total"]) + "░" * (20 - p["answered"] * 20 // p["total"])
+        status = "✓ FERTIG" if p["answered"] >= p["total"] else f"{p['answered']}/{p['total']}"
+        lines.append(f"  {area.capitalize()}: [{bar}] {status}")
+
+    # Scored items summary — grouped by area/frequency with average scores
+    if item_responses:
+        lines.append("\n## Bisherige Bewertungen (Zusammenfassung pro Frequenz):")
+        from collections import defaultdict
+        freq_data: dict[str, list[float]] = defaultdict(list)
+        for resp in item_responses:
+            freq_data[resp.get("frequency", "?")].append(float(resp.get("score", 0)))
+
+        for area in CLUSTER_ORDER:
+            freqs = AREA_FREQUENCIES.get(area, [])
+            area_scores = []
+            for freq in freqs:
+                if freq in freq_data:
+                    avg = sum(freq_data[freq]) / len(freq_data[freq])
+                    area_scores.append(f"    {freq}: {avg:.1f} ({len(freq_data[freq])} Items)")
+            if area_scores:
+                lines.append(f"  [{area.upper()}]")
+                lines.extend(area_scores)
+
+    # Already scored item IDs (so AI knows not to re-ask)
+    if answered_ids:
+        lines.append(f"\nBereits bewertete Item-IDs: {', '.join(sorted(answered_ids))}")
+
+    # Conversation turn count for context
+    user_turns = sum(1 for m in conversation if m["role"] == "user")
+    lines.append(f"\nBisherige Gespraechs-Turns: {user_turns}")
+
+    # How many training suggestions have been made (to limit upsell)
+    lines.append("## === ENDE SESSION STATE ===")
+
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # Tool Definitions
 # ---------------------------------------------------------------------------
@@ -189,6 +311,55 @@ SCORE_ITEM_TOOL = {
             },
         },
         "required": ["item_id", "score", "confidence"],
+    },
+}
+
+SUGGEST_TRAINING_TOOL = {
+    "name": "suggest_training",
+    "description": (
+        "Schlage dem Nutzer passende Trainings-Ressourcen vor, basierend auf seinen Ergebnissen "
+        "in bestimmten Frequenzen. Nutze dieses Tool wenn der Nutzer niedrig scored (< 2.0) "
+        "oder explizit nach Trainings/Ressourcen fragt. Maximal 2-3 Mal pro Session nutzen."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "frequency": {
+                "type": "string",
+                "description": "Die SCIL-Frequenz fuer die ein Training empfohlen wird (z.B. 'gestik', 'stimme', 'analytik')",
+            },
+            "reason": {
+                "type": "string",
+                "description": "Kurze Begruendung warum dieses Training empfohlen wird (fuer internen Gebrauch)",
+            },
+        },
+        "required": ["frequency"],
+    },
+}
+
+BOOK_MEETING_TOOL = {
+    "name": "book_meeting",
+    "description": (
+        "Erstelle eine Buchungsanfrage fuer ein Coaching-Meeting. Nutze dieses Tool wenn der Nutzer "
+        "ein Meeting mit seinem Coach vereinbaren moechte. Der Nutzer muss Datum/Zeit angeben."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "topic": {
+                "type": "string",
+                "description": "Thema oder Grund fuer das Meeting",
+            },
+            "preferred_date": {
+                "type": "string",
+                "description": "Gewuenschtes Datum (ISO-Format oder natuerliche Sprache)",
+            },
+            "notes": {
+                "type": "string",
+                "description": "Zusaetzliche Notizen oder Wuensche des Coachees",
+            },
+        },
+        "required": ["topic"],
     },
 }
 
@@ -542,11 +713,11 @@ class DiagnosisAgent:
             if area_remaining <= 0 and next_items:
                 next_area = next_items[0]["area"]
 
-            # Build system prompt with item context
+            # Build system prompt with item context + full state summary
             system = SCIL_BASE_PROMPT
 
-            # Add progress context
-            system += _build_progress_context(answered_ids, item_responses)
+            # Add structured state summary (the AI's "memory")
+            system += _build_state_summary(answered_ids, item_responses, current_area, conversation)
 
             # Add scoring instructions for pending items — VERY explicit
             if pending_items:
@@ -596,14 +767,14 @@ class DiagnosisAgent:
                 )
 
             # Generate response with tool_use
-            tools = [SCORE_ITEM_TOOL, UPDATE_SCORES_TOOL]
+            tools = [SCORE_ITEM_TOOL, UPDATE_SCORES_TOOL, SUGGEST_TRAINING_TOOL, BOOK_MEETING_TOOL]
 
             result = await self.ai_service.generate_with_tools(
                 prompt=self._format_conversation(messages),
                 tools=tools,
                 system=system,
                 model="claude-sonnet-4-20250514",
-                max_tokens=1000,
+                max_tokens=1200,
                 temperature=0.7,
                 user_id=run.user_id,
                 intent="scil_assessment",
@@ -654,6 +825,31 @@ class DiagnosisAgent:
                         if area_key not in answers or not isinstance(answers.get(area_key), dict):
                             answers[area_key] = {}
                         answers[area_key].update(freq_scores)
+
+                elif tc["name"] == "suggest_training":
+                    freq = tc["input"].get("frequency", "")
+                    trainings = TRAINING_BY_FREQUENCY.get(freq, [])
+                    if trainings:
+                        training_names = [t["title"] for t in trainings[:3]]
+                        logger.info(f"Training suggestion for {freq}: {training_names}")
+                        # Track suggestion count to limit upsell
+                        suggestion_count = answers.get("_training_suggestions_count", 0)
+                        answers["_training_suggestions_count"] = suggestion_count + 1
+                    else:
+                        logger.info(f"No training content found for frequency: {freq}")
+
+                elif tc["name"] == "book_meeting":
+                    topic = tc["input"].get("topic", "Coaching-Meeting")
+                    preferred_date = tc["input"].get("preferred_date", "")
+                    notes = tc["input"].get("notes", "")
+                    logger.info(f"Meeting booking request: topic={topic}, date={preferred_date}")
+                    # Store booking intent in answers for frontend to handle
+                    answers["_booking_request"] = {
+                        "topic": topic,
+                        "preferred_date": preferred_date,
+                        "notes": notes,
+                        "requested_at": datetime.now(timezone.utc).isoformat(),
+                    }
 
             # Update answered_ids with new scores
             answered_ids = {r["item_id"] for r in item_responses}
@@ -711,7 +907,7 @@ class DiagnosisAgent:
                 full_text = ""
                 async for chunk in self.ai_service.generate_stream(
                     prompt=self._format_conversation(messages) + f"\n\nAgent (Kontext): [Scores vergeben: {', '.join(scored_summary_parts)}]\n\n{follow_up_prompt}",
-                    system=SCIL_BASE_PROMPT + _build_progress_context(updated_answered, item_responses),
+                    system=SCIL_BASE_PROMPT + _build_state_summary(updated_answered, item_responses, next_area, conversation),
                     model="claude-sonnet-4-20250514",
                     max_tokens=400,
                     user_id=run.user_id,
@@ -1043,31 +1239,53 @@ class DiagnosisAgent:
     # ------------------------------------------------------------------
 
     def _build_messages(self, conversation: list[dict]) -> list[dict]:
-        """Build messages list with context budgeting for long conversations."""
-        if len(conversation) <= 14:
+        """Build messages list with context budgeting for long conversations.
+
+        With Claude Sonnet's 200K context, we can afford to keep much more
+        conversation history. We keep the last 20 messages fully and a summary
+        of earlier ones. The structured state summary (injected into the system
+        prompt) provides the AI with complete scoring context regardless of
+        conversation window size.
+        """
+        if len(conversation) <= 20:
             return conversation
 
-        budget = 8000  # Increased for 100-item sessions
+        # Keep last 20 messages + summarize earlier ones
+        budget = 50000  # 50K tokens — plenty for 200K context model
         result = build_conversation_window(conversation, budget)
-        selected = result.get("selected", conversation[-8:])
+        selected = result.get("selected", conversation[-20:])
 
         summary = result.get("summary_text", "")
         if summary and selected:
-            selected = [{"role": "assistant", "content": f"[Kontext bisheriger Gespraechsverlauf: {summary}]"}] + selected
+            selected = [{"role": "assistant", "content": f"[Zusammenfassung frueherer Gespraechsteile: {summary}]"}] + selected
 
         return selected
 
     def _format_conversation(self, messages: list[dict]) -> str:
-        """Format conversation for generate/generate_with_tools."""
+        """Format conversation for generate/generate_with_tools.
+
+        Includes the last 12 turns (24 messages) of actual dialogue for the AI
+        to reference, plus a brief summary prefix if there's more history.
+        """
+        # For very long conversations, take last 24 messages (12 turns)
+        # but always include the full recent context
+        if len(messages) > 24:
+            prefix_msg_count = len(messages) - 24
+            prefix = f"[... {prefix_msg_count} fruehere Nachrichten ausgelassen — siehe SESSION STATE fuer Gesamtkontext ...]\n\n"
+            recent = messages[-24:]
+        else:
+            prefix = ""
+            recent = messages
+
         parts = []
-        for msg in messages:
+        for msg in recent:
             role = msg["role"]
             content = msg["content"]
             if role == "user":
                 parts.append(f"User: {content}")
             elif role == "assistant":
                 parts.append(f"Agent: {content}")
-        return "\n\n".join(parts)
+        return prefix + "\n\n".join(parts)
 
     def _extract_scores(self, tool_input: dict) -> dict:
         """Extract and validate SCIL scores from legacy update_scil_scores tool."""

@@ -7,10 +7,10 @@ import { CoachSidebar } from "@/components/coach/CoachSidebar";
 import type { CoacheeDetail, CodeInventoryItem } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  invited: { label: "Eingeladen", color: "text-blue-400" },
-  pending: { label: "Ausstehend", color: "text-yellow-400" },
-  active: { label: "Aktiv", color: "text-scil" },
-  completed: { label: "Abgeschlossen", color: "text-emerald-400" },
+  invited: { label: "Eingeladen", color: "text-blue-600" },
+  pending: { label: "Ausstehend", color: "text-amber-600" },
+  active: { label: "Aktiv", color: "text-scil-dark" },
+  completed: { label: "Abgeschlossen", color: "text-emerald-600" },
   archived: { label: "Archiviert", color: "text-slate-500" },
 };
 
@@ -29,6 +29,7 @@ function InviteModal({
   const [notes, setNotes] = useState("");
   const [selectedCode, setSelectedCode] = useState("");
   const [sending, setSending] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -37,18 +38,34 @@ function InviteModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    await onInvite(email, notes || undefined, selectedCode || undefined);
-    setSending(false);
-    setEmail("");
-    setNotes("");
-    setSelectedCode("");
-    onClose();
+    setInviteError(null);
+    try {
+      const result = await onInvite(email, notes || undefined, selectedCode || undefined);
+      setSending(false);
+      if (result) {
+        setEmail("");
+        setNotes("");
+        setSelectedCode("");
+        setInviteError(null);
+        onClose();
+      } else {
+        setInviteError("Einladung fehlgeschlagen. Bitte versuche es erneut.");
+      }
+    } catch (err) {
+      setSending(false);
+      setInviteError(err instanceof Error ? err.message : "Einladung fehlgeschlagen.");
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
       <div className="glass-strong rounded-2xl animate-fade-in-up p-6 w-full max-w-md mx-4">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Coachee einladen</h2>
+        {inviteError && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+            {inviteError}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-500 mb-1">E-Mail-Adresse *</label>
@@ -103,11 +120,41 @@ function InviteModal({
 function CoacheeDetailPanel({
   detail,
   onClose,
+  codes,
+  onAssignCode,
 }: {
   detail: CoacheeDetail;
   onClose: () => void;
+  codes: CodeInventoryItem[];
+  onAssignCode: (assignmentId: string, tokenId: string) => Promise<boolean>;
 }) {
-  const statusInfo = STATUS_LABELS[detail.status] || { label: detail.status, color: "text-slate-400" };
+  const statusInfo = STATUS_LABELS[detail.status] || { label: detail.status, color: "text-slate-500" };
+  const [selectedCodeId, setSelectedCodeId] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+  const [assignSuccess, setAssignSuccess] = useState(false);
+
+  const availableCodes = codes.filter((c) => ["emitted", "sold"].includes(c.status));
+
+  const handleAssign = async () => {
+    if (!selectedCodeId) return;
+    setAssigning(true);
+    setAssignError(null);
+    setAssignSuccess(false);
+    try {
+      const ok = await onAssignCode(detail.id, selectedCodeId);
+      if (ok) {
+        setAssignSuccess(true);
+        setSelectedCodeId("");
+      } else {
+        setAssignError("Zuweisung fehlgeschlagen. Bitte versuche es erneut.");
+      }
+    } catch (err) {
+      setAssignError(err instanceof Error ? err.message : "Zuweisung fehlgeschlagen.");
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   return (
     <div className="h-full overflow-y-auto p-4 bg-white/80">
@@ -143,6 +190,42 @@ function CoacheeDetailPanel({
           </div>
         )}
 
+        {/* Code Assignment Section - only when no code assigned */}
+        {!detail.token_code && (
+          <div className="p-3 bg-black/[0.02] border border-black/[0.06] rounded-xl space-y-2">
+            <h4 className="text-sm font-medium text-slate-500">Diagnostik-Code zuweisen</h4>
+            {availableCodes.length === 0 ? (
+              <p className="text-xs text-slate-500">Keine verfuegbaren Codes vorhanden.</p>
+            ) : (
+              <>
+                <select
+                  value={selectedCodeId}
+                  onChange={(e) => setSelectedCodeId(e.target.value)}
+                  className="w-full glass-input text-slate-900 px-3 py-2 text-sm focus:outline-none focus:border-scil"
+                >
+                  <option value="">Code waehlen...</option>
+                  {availableCodes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.token_code} ({c.tier})</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAssign}
+                  disabled={!selectedCodeId || assigning}
+                  className="w-full py-2 btn-glass text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+                >
+                  {assigning ? "Wird zugewiesen..." : "Zuweisen"}
+                </button>
+              </>
+            )}
+            {assignError && (
+              <p className="text-xs text-red-500">{assignError}</p>
+            )}
+            {assignSuccess && (
+              <p className="text-xs text-emerald-500">Code erfolgreich zugewiesen.</p>
+            )}
+          </div>
+        )}
+
         {detail.diagnostic_runs.length > 0 && (
           <div>
             <h4 className="text-sm font-medium text-slate-500 mb-2 uppercase tracking-wider">Diagnostik-Verlauf</h4>
@@ -151,9 +234,9 @@ function CoacheeDetailPanel({
                 <div key={run.id} className="flex items-center justify-between p-3 bg-black/[0.02] border border-black/[0.06] rounded-xl">
                   <div>
                     <span className="text-sm text-slate-900">{new Date(run.started_at).toLocaleDateString("de-DE")}</span>
-                    <span className="text-xs text-slate-400 ml-2">{Math.round(run.progress * 100)}%</span>
+                    <span className="text-xs text-slate-500 ml-2">{Math.round(run.progress * 100)}%</span>
                   </div>
-                  <span className={`text-xs font-medium ${run.status === "completed" ? "text-emerald-400" : run.status === "started" ? "text-scil" : "text-slate-400"}`}>
+                  <span className={`text-xs font-medium ${run.status === "completed" ? "text-emerald-600" : run.status === "started" ? "text-scil" : "text-slate-500"}`}>
                     {run.status === "completed" ? "Abgeschlossen" : run.status === "started" ? "In Bearbeitung" : run.status}
                   </span>
                 </div>
@@ -185,7 +268,7 @@ function CoacheeDetailPanel({
 export default function CoachDashboardPage() {
   const {
     stats, coachees, codes, activity,
-    isLoading, error, inviteCoachee, fetchCoacheeDetail,
+    isLoading, error, inviteCoachee, fetchCoacheeDetail, assignCode,
   } = useCoachDashboard();
 
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -200,7 +283,12 @@ export default function CoachDashboardPage() {
   };
 
   const rightPanel = selectedDetail ? (
-    <CoacheeDetailPanel detail={selectedDetail} onClose={() => setSelectedDetail(null)} />
+    <CoacheeDetailPanel
+      detail={selectedDetail}
+      onClose={() => setSelectedDetail(null)}
+      codes={codes}
+      onAssignCode={assignCode}
+    />
   ) : loadingDetail ? (
     <div className="h-full flex items-center justify-center bg-white/80">
       <div className="flex gap-1">
@@ -211,7 +299,7 @@ export default function CoachDashboardPage() {
     </div>
   ) : (
     <div className="h-full flex items-center justify-center bg-white/80">
-      <p className="text-sm text-slate-400">Waehle einen Coachee aus</p>
+      <p className="text-sm text-slate-500">Waehle einen Coachee aus</p>
     </div>
   );
 
@@ -242,7 +330,7 @@ export default function CoachDashboardPage() {
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 text-sm">
               {error}
             </div>
           )}
@@ -259,15 +347,34 @@ export default function CoachDashboardPage() {
                 <div className="text-sm text-slate-500">Aktive Diagnostiken</div>
               </div>
               <div className="glass-card rounded-2xl p-5 stagger-3">
-                <div className="text-3xl font-bold text-emerald-400 mb-1 stat-number">{stats.codes_available}</div>
+                <div className="text-3xl font-bold text-emerald-600 mb-1 stat-number">{stats.codes_available}</div>
                 <div className="text-sm text-slate-500">Codes verfuegbar</div>
               </div>
               <div className="glass-card rounded-2xl p-5 stagger-4">
-                <div className="text-3xl font-bold text-blue-400 mb-1 stat-number">{stats.completed_diagnostics}</div>
+                <div className="text-3xl font-bold text-blue-600 mb-1 stat-number">{stats.completed_diagnostics}</div>
                 <div className="text-sm text-slate-500">Abgeschlossen</div>
               </div>
             </div>
           )}
+
+          {/* Quick Actions */}
+          <div className="flex flex-wrap gap-3 mb-6 animate-fade-in-up">
+            <a
+              href="/bookings"
+              className="inline-flex items-center gap-2 px-4 py-2.5 glass-card-interactive rounded-xl text-sm font-medium text-slate-700 hover:text-scil transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Buchungen verwalten
+            </a>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 btn-glass text-white rounded-xl text-sm font-medium transition-colors"
+            >
+              <span>+</span> Coachee einladen
+            </button>
+          </div>
 
           {/* Coachee List (main content) */}
           <div className="animate-fade-in-up">
@@ -285,7 +392,7 @@ export default function CoachDashboardPage() {
             ) : (
               <div className="space-y-2">
                 {coachees.map((c, idx) => {
-                  const statusInfo = STATUS_LABELS[c.status] || { label: c.status, color: "text-slate-400" };
+                  const statusInfo = STATUS_LABELS[c.status] || { label: c.status, color: "text-slate-500" };
                   const isSelected = selectedDetail?.id === c.id;
                   return (
                     <div
@@ -303,7 +410,7 @@ export default function CoachDashboardPage() {
                         </div>
                         <div>
                           <div className="text-sm font-medium text-slate-900">{c.coachee_name || c.coachee_email}</div>
-                          {c.coachee_name && <div className="text-xs text-slate-400">{c.coachee_email}</div>}
+                          {c.coachee_name && <div className="text-xs text-slate-500">{c.coachee_email}</div>}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -327,7 +434,7 @@ export default function CoachDashboardPage() {
                 {activity.slice(0, 5).map((a, idx) => (
                   <div key={idx} className="p-3 bg-black/[0.02] border border-black/[0.06] rounded-xl">
                     <p className="text-sm text-slate-600">{a.description}</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {new Date(a.timestamp).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>

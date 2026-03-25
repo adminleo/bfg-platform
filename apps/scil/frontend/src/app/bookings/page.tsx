@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useBookings } from "@/hooks/useBookings";
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
 import { AppShell } from "@/components/layout/AppShell";
 import { BookingsSidebar } from "@/components/bookings/BookingsSidebar";
-import type { Booking, AvailabilitySlot, SessionBriefing } from "@/lib/types";
+import type { Booking, AvailabilitySlot, AvailableTime, SessionBriefing } from "@/lib/types";
 
 // ── Day names ─────────────────────────────────────────────────────────
 const DAY_NAMES = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -13,11 +14,11 @@ const DAY_SHORT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 // ── Status config ─────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  requested: { label: "Ausstehend", color: "text-amber-400", bg: "bg-amber-400/10 border border-amber-400/20" },
-  confirmed: { label: "Bestaetigt", color: "text-green-400", bg: "bg-green-400/10 border border-green-400/20" },
-  cancelled: { label: "Abgesagt", color: "text-red-400", bg: "bg-red-400/10 border border-red-400/20" },
-  completed: { label: "Abgeschlossen", color: "text-blue-400", bg: "bg-blue-400/10 border border-blue-400/20" },
-  no_show: { label: "Nicht erschienen", color: "text-slate-400", bg: "bg-slate-400/10 border border-slate-400/20" },
+  requested: { label: "Ausstehend", color: "text-amber-600", bg: "bg-amber-50 border border-amber-200" },
+  confirmed: { label: "Bestaetigt", color: "text-green-600", bg: "bg-green-50 border border-green-200" },
+  cancelled: { label: "Abgesagt", color: "text-red-600", bg: "bg-red-50 border border-red-200" },
+  completed: { label: "Abgeschlossen", color: "text-blue-600", bg: "bg-blue-50 border border-blue-200" },
+  no_show: { label: "Nicht erschienen", color: "text-slate-500", bg: "bg-slate-50 border border-slate-200" },
 };
 
 // ── Booking Card ──────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ function BookingCard({
               {statusCfg.label}
             </span>
             {booking.has_briefing && isCoach && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-400/10 border border-purple-400/20 text-purple-400">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-400/10 border border-purple-400/20 text-purple-600">
                 Briefing
               </span>
             )}
@@ -74,19 +75,19 @@ function BookingCard({
         <div className="text-right">
           <div className="text-sm text-slate-900 font-medium">{dateStr}</div>
           <div className="text-sm text-scil">{timeStr} Uhr</div>
-          <div className="text-xs text-slate-400">{booking.duration_minutes} Min.</div>
+          <div className="text-xs text-slate-500">{booking.duration_minutes} Min.</div>
         </div>
       </div>
 
       {booking.coachee_notes && (
         <div className="text-xs text-slate-500 bg-black/[0.02] border border-black/[0.06] rounded-xl p-3 mb-3">
-          <span className="text-slate-400">Notiz:</span> {booking.coachee_notes}
+          <span className="text-slate-500">Notiz:</span> {booking.coachee_notes}
         </div>
       )}
 
       {booking.summary && (
         <div className="text-xs text-slate-500 bg-black/[0.02] border border-black/[0.06] rounded-xl p-3 mb-3">
-          <span className="text-slate-400">Zusammenfassung:</span> {booking.summary}
+          <span className="text-slate-500">Zusammenfassung:</span> {booking.summary}
         </div>
       )}
 
@@ -106,7 +107,7 @@ function BookingCard({
         {isCoach && booking.status === "requested" && (
           <button
             onClick={() => onConfirm(booking.id)}
-            className="px-3 py-1.5 text-xs bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-xl border border-green-500/20 transition-colors"
+            className="px-3 py-1.5 text-xs bg-green-500/10 text-green-600 hover:bg-green-500/20 rounded-xl border border-green-500/20 transition-colors"
           >
             Bestaetigen
           </button>
@@ -114,7 +115,7 @@ function BookingCard({
         {booking.status === "confirmed" && isCoach && (
           <button
             onClick={() => onComplete(booking.id)}
-            className="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl border border-blue-500/20 transition-colors"
+            className="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 rounded-xl border border-blue-500/20 transition-colors"
           >
             Abschliessen
           </button>
@@ -122,7 +123,7 @@ function BookingCard({
         {(booking.status === "requested" || booking.status === "confirmed") && (
           <button
             onClick={() => onCancel(booking.id)}
-            className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-colors"
+            className="px-3 py-1.5 text-xs bg-red-500/10 text-red-600 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-colors"
           >
             Absagen
           </button>
@@ -130,7 +131,7 @@ function BookingCard({
         {isCoach && booking.has_briefing && (
           <button
             onClick={() => onViewBriefing(booking.id)}
-            className="px-3 py-1.5 text-xs bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors"
+            className="px-3 py-1.5 text-xs bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors"
           >
             Briefing ansehen
           </button>
@@ -145,6 +146,7 @@ function SlotManager({
   slots,
   onCreateSlot,
   onDeleteSlot,
+  onUpdateSlot,
 }: {
   slots: AvailabilitySlot[];
   onCreateSlot: (slot: {
@@ -154,6 +156,10 @@ function SlotManager({
     duration_minutes: number;
   }) => Promise<void>;
   onDeleteSlot: (id: string) => Promise<void>;
+  onUpdateSlot: (slotId: string, updates: Partial<{
+    start_time: string; end_time: string; duration_minutes: number;
+    recurrence: string; notes: string; is_active: boolean;
+  }>) => Promise<void>;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [dayOfWeek, setDayOfWeek] = useState(0);
@@ -161,6 +167,11 @@ function SlotManager({
   const [endTime, setEndTime] = useState("12:00");
   const [duration, setDuration] = useState(60);
   const [creating, setCreating] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<AvailabilitySlot | null>(null);
+  const [editStartTime, setEditStartTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
+  const [editDuration, setEditDuration] = useState(60);
+  const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
     setCreating(true);
@@ -174,6 +185,32 @@ function SlotManager({
       setShowForm(false);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleEditClick = (slot: AvailabilitySlot) => {
+    setEditingSlot(slot);
+    setEditStartTime(slot.start_time);
+    setEditEndTime(slot.end_time);
+    setEditDuration(slot.duration_minutes);
+  };
+
+  const handleEditCancel = () => {
+    setEditingSlot(null);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingSlot) return;
+    setSaving(true);
+    try {
+      await onUpdateSlot(editingSlot.id, {
+        start_time: editStartTime,
+        end_time: editEndTime,
+        duration_minutes: editDuration,
+      });
+      setEditingSlot(null);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -252,20 +289,88 @@ function SlotManager({
         </div>
       )}
 
+      {/* Edit Slot Form */}
+      {editingSlot && (
+        <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-4 mb-4 space-y-3 animate-fade-in-up">
+          <h3 className="text-sm font-medium text-slate-700">Slot bearbeiten</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Tag</label>
+              <select
+                value={editingSlot.day_of_week}
+                disabled
+                className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm opacity-60 cursor-not-allowed"
+              >
+                {DAY_NAMES.map((name, i) => (
+                  <option key={i} value={i}>{name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Dauer (Min.)</label>
+              <select
+                value={editDuration}
+                onChange={(e) => setEditDuration(Number(e.target.value))}
+                className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm"
+              >
+                <option value={30}>30</option>
+                <option value={45}>45</option>
+                <option value={60}>60</option>
+                <option value={90}>90</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Von</label>
+              <input
+                type="time"
+                value={editStartTime}
+                onChange={(e) => setEditStartTime(e.target.value)}
+                className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Bis</label>
+              <input
+                type="time"
+                value={editEndTime}
+                onChange={(e) => setEditEndTime(e.target.value)}
+                className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEditSave}
+              disabled={saving}
+              className="btn-glass text-white font-medium rounded-xl flex-1 py-2 text-sm disabled:opacity-50"
+            >
+              {saving ? "Speichere..." : "Speichern"}
+            </button>
+            <button
+              onClick={handleEditCancel}
+              className="btn-ghost text-slate-600 rounded-xl px-4 py-2 text-sm"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-7 gap-1">
         {DAY_SHORT.map((day, i) => (
           <div key={i} className="text-center">
-            <div className="text-xs text-slate-400 font-medium mb-2">{day}</div>
+            <div className="text-xs text-slate-500 font-medium mb-2">{day}</div>
             <div className="space-y-1 min-h-[60px]">
               {(slotsByDay[i] ?? []).map((slot) => (
                 <div
                   key={slot.id}
-                  className="group relative bg-scil/10 border border-scil/20 rounded-xl px-1 py-1 text-center"
+                  onClick={() => handleEditClick(slot)}
+                  className="group relative bg-scil/10 border border-scil/20 rounded-xl px-1 py-1 text-center cursor-pointer hover:bg-scil/20 transition-colors"
                 >
                   <div className="text-[10px] text-scil leading-tight">{slot.start_time}</div>
                   <div className="text-[10px] text-scil leading-tight">{slot.end_time}</div>
                   <button
-                    onClick={() => onDeleteSlot(slot.id)}
+                    onClick={(e) => { e.stopPropagation(); onDeleteSlot(slot.id); }}
                     className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[8px] leading-none opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                     title="Loeschen"
                   >
@@ -279,7 +384,7 @@ function SlotManager({
       </div>
 
       {slots.length === 0 && (
-        <div className="text-center text-slate-400 text-sm py-6">
+        <div className="text-center text-slate-500 text-sm py-6">
           Noch keine Verfuegbarkeits-Slots angelegt.
         </div>
       )}
@@ -292,11 +397,22 @@ function BriefingPanel({
   briefing,
   onClose,
   onRegenerate,
+  onRefresh,
 }: {
   briefing: SessionBriefing;
   onClose: () => void;
   onRegenerate: () => void;
+  onRefresh?: () => void;
 }) {
+  // Auto-refresh polling when briefing is generating
+  useEffect(() => {
+    if (briefing.status !== "generating" || !onRefresh) return;
+    const interval = setInterval(() => {
+      onRefresh();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [briefing.status, onRefresh]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
       <div className="glass-strong rounded-2xl animate-fade-in-up max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
@@ -374,7 +490,7 @@ function BriefingPanel({
           )}
 
           <div className="flex gap-2 mt-6">
-            <button onClick={onRegenerate} className="px-4 py-2 text-sm bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors">
+            <button onClick={onRegenerate} className="px-4 py-2 text-sm bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 rounded-xl border border-purple-500/20 transition-colors">
               Neu generieren
             </button>
             <button onClick={onClose} className="btn-ghost text-slate-600 rounded-xl px-4 py-2 text-sm">
@@ -392,16 +508,42 @@ function NewBookingModal({
   coachId,
   onClose,
   onBook,
+  fetchAvailableTimes,
 }: {
   coachId: string;
   onClose: () => void;
   onBook: (data: { coach_id: string; scheduled_at: string; topic?: string; coachee_notes?: string; slot_id?: string }) => Promise<void>;
+  fetchAvailableTimes?: (coachId: string, startDate: string, endDate: string) => Promise<AvailableTime[]>;
 }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
   const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<AvailableTime[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Fetch available times when coachId is set
+  useEffect(() => {
+    if (!coachId || !fetchAvailableTimes) return;
+    setLoadingSlots(true);
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + 14);
+    fetchAvailableTimes(
+      coachId,
+      start.toISOString().split("T")[0],
+      end.toISOString().split("T")[0]
+    )
+      .then((times) => setAvailableSlots(times))
+      .catch(() => {})
+      .finally(() => setLoadingSlots(false));
+  }, [coachId, fetchAvailableTimes]);
+
+  const handleSelectSlot = (slot: AvailableTime) => {
+    setDate(slot.date);
+    setTime(slot.time);
+  };
 
   const handleSubmit = async () => {
     if (!date || !time) return;
@@ -419,30 +561,77 @@ function NewBookingModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
       <div className="glass-strong rounded-2xl animate-fade-in-up max-w-md w-full mx-4 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Neue Buchung</h2>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Datum</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm" />
+
+        {!coachId ? (
+          <div className="text-center py-6">
+            <p className="text-slate-500 text-sm mb-2">Kein Coach zugewiesen.</p>
+            <p className="text-slate-500 text-xs">Bitte wende dich an deinen Coach, um eine Einladung zu erhalten.</p>
+            <button onClick={onClose} className="mt-4 btn-ghost text-slate-600 rounded-xl px-4 py-2 text-sm">Schliessen</button>
           </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Uhrzeit</label>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Thema (optional)</label>
-            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="z.B. Kommunikation verbessern" className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-400" />
-          </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Notizen (optional)</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Was moechtest du besprechen?" className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-400 resize-none" />
-          </div>
-        </div>
-        <div className="flex gap-2 mt-5">
-          <button onClick={handleSubmit} disabled={!date || submitting} className="btn-glass text-white font-medium rounded-xl flex-1 py-2 text-sm disabled:opacity-50">
-            {submitting ? "Buche..." : "Buchen"}
-          </button>
-          <button onClick={onClose} className="btn-ghost text-slate-600 rounded-xl px-4 py-2 text-sm">Abbrechen</button>
-        </div>
+        ) : (
+          <>
+            {/* Available time slots from coach */}
+            {availableSlots.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-xs text-slate-500 mb-2">Verfuegbare Termine</label>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {availableSlots.slice(0, 20).map((slot, i) => {
+                    const slotDate = new Date(slot.date + "T" + slot.time);
+                    const isSelected = date === slot.date && time === slot.time;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectSlot(slot)}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                          isSelected
+                            ? "bg-scil/10 border border-scil/30 text-scil"
+                            : "bg-black/[0.02] border border-black/[0.06] text-slate-700 hover:bg-black/[0.04]"
+                        }`}
+                      >
+                        {slotDate.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}
+                        {" "}
+                        <span className="font-medium">{slot.time} ({slot.duration_minutes} Min.)</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {loadingSlots && (
+              <div className="text-center py-3 mb-3">
+                <div className="animate-spin w-5 h-5 border-2 border-scil border-t-transparent rounded-full mx-auto" />
+                <p className="text-xs text-slate-500 mt-1">Lade verfuegbare Zeiten...</p>
+              </div>
+            )}
+
+            {/* Manual date/time (fallback or fine-tuning) */}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">{availableSlots.length > 0 ? "Datum (oder manuell waehlen)" : "Datum"}</label>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Uhrzeit</label>
+                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Thema (optional)</label>
+                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="z.B. Kommunikation verbessern" className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Notizen (optional)</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Was moechtest du besprechen?" className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-500 resize-none" />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={handleSubmit} disabled={!date || submitting} className="btn-glass text-white font-medium rounded-xl flex-1 py-2 text-sm disabled:opacity-50">
+                {submitting ? "Buche..." : "Buchen"}
+              </button>
+              <button onClick={onClose} className="btn-ghost text-slate-600 rounded-xl px-4 py-2 text-sm">Abbrechen</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -472,11 +661,11 @@ function CompleteModal({
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-slate-500 mb-1">Coach-Notizen</label>
-            <textarea value={coachNotes} onChange={(e) => setCoachNotes(e.target.value)} rows={3} placeholder="Interne Notizen zur Session..." className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-400 resize-none" />
+            <textarea value={coachNotes} onChange={(e) => setCoachNotes(e.target.value)} rows={3} placeholder="Interne Notizen zur Session..." className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-500 resize-none" />
           </div>
           <div>
             <label className="block text-xs text-slate-500 mb-1">Zusammenfassung</label>
-            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="Oeffentliche Zusammenfassung der Session..." className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-400 resize-none" />
+            <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={3} placeholder="Oeffentliche Zusammenfassung der Session..." className="glass-input text-slate-900 px-3 py-2.5 w-full text-sm placeholder:text-slate-500 resize-none" />
           </div>
         </div>
         <div className="flex gap-2 mt-5">
@@ -497,19 +686,33 @@ export default function BookingsPage() {
   const { user } = useAuth();
   const {
     slots, bookings, upcomingBookings, currentBriefing,
-    isLoading, error, clearError, fetchSlots, createSlot, deleteSlot,
+    isLoading, error, clearError, fetchSlots, createSlot, deleteSlot, updateSlot,
     fetchBookings, fetchUpcoming, confirmBooking, cancelBooking, completeBooking,
-    createBooking, fetchBriefing, regenerateBriefing,
+    createBooking, fetchBriefing, regenerateBriefing, fetchAvailableTimes,
   } = useBookings();
 
   const [activeTab, setActiveTab] = useState<"upcoming" | "all" | "slots">("upcoming");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [showNewBooking, setShowNewBooking] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
+  const [briefingBookingId, setBriefingBookingId] = useState<string | null>(null);
   const [showComplete, setShowComplete] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [myCoachId, setMyCoachId] = useState<string>("");
 
   const isCoach = user?.role === "coach" || user?.role === "admin";
+
+  // Fetch assigned coach for coachees (needed for booking creation)
+  useEffect(() => {
+    if (!isCoach) {
+      api
+        .get<{ coach_id: string; coach_name: string }>("/me/coach")
+        .then((data) => {
+          if (data?.coach_id) setMyCoachId(data.coach_id);
+        })
+        .catch(() => {});
+    }
+  }, [isCoach]);
 
   // Refresh bookings when filter changes
   useEffect(() => {
@@ -541,7 +744,13 @@ export default function BookingsPage() {
   };
 
   const handleViewBriefing = async (bookingId: string) => {
-    try { await fetchBriefing(bookingId); setShowBriefing(true); } catch (e) { console.error(e); }
+    try { await fetchBriefing(bookingId); setBriefingBookingId(bookingId); setShowBriefing(true); } catch (e) { console.error(e); }
+  };
+
+  const handleRefreshBriefing = async () => {
+    if (briefingBookingId) {
+      try { await fetchBriefing(briefingBookingId); } catch (e) { console.error(e); }
+    }
   };
 
   const handleCreateBooking = async (data: { coach_id: string; scheduled_at: string; topic?: string; coachee_notes?: string; slot_id?: string }) => {
@@ -580,8 +789,8 @@ export default function BookingsPage() {
           {/* Error banner */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
-              <span className="text-sm text-red-400">{error}</span>
-              <button onClick={clearError} className="text-red-400 hover:text-red-300 text-sm">x</button>
+              <span className="text-sm text-red-600">{error}</span>
+              <button onClick={clearError} className="text-red-600 hover:text-red-300 text-sm">x</button>
             </div>
           )}
 
@@ -656,17 +865,17 @@ export default function BookingsPage() {
           )}
 
           {activeTab === "slots" && isCoach && (
-            <SlotManager slots={slots} onCreateSlot={handleCreateSlot} onDeleteSlot={handleDeleteSlot} />
+            <SlotManager slots={slots} onCreateSlot={handleCreateSlot} onDeleteSlot={handleDeleteSlot} onUpdateSlot={async (id, u) => { await updateSlot(id, u); }} />
           )}
         </div>
       </AppShell>
 
       {/* Modals */}
       {showNewBooking && (
-        <NewBookingModal coachId="" onClose={() => setShowNewBooking(false)} onBook={handleCreateBooking} />
+        <NewBookingModal coachId={myCoachId} onClose={() => setShowNewBooking(false)} onBook={handleCreateBooking} fetchAvailableTimes={fetchAvailableTimes} />
       )}
       {showBriefing && currentBriefing && (
-        <BriefingPanel briefing={currentBriefing} onClose={() => setShowBriefing(false)} onRegenerate={handleRegenerate} />
+        <BriefingPanel briefing={currentBriefing} onClose={() => { setShowBriefing(false); setBriefingBookingId(null); }} onRegenerate={handleRegenerate} onRefresh={handleRefreshBriefing} />
       )}
       {showComplete && (
         <CompleteModal onClose={() => setShowComplete(null)} onComplete={handleCompleteSubmit} />

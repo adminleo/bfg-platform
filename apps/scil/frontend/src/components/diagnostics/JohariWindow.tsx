@@ -67,7 +67,7 @@ export function JohariWindow({ data, competencyLabels = DEFAULT_LABELS }: Johari
     <div className="space-y-4">
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gr8-navy">Johari-Fenster</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Johari-Fenster</h3>
         <p className="text-sm text-slate-500">Selbstbild vs. Fremdbild — Wo stimmt die Wahrnehmung überein?</p>
       </div>
 

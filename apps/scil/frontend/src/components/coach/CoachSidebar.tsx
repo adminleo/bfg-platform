@@ -3,10 +3,10 @@
 import type { CoacheeListItem, CoachDashboardStats } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  invited: { label: "Eingeladen", color: "text-blue-400" },
-  pending: { label: "Ausstehend", color: "text-yellow-400" },
-  active: { label: "Aktiv", color: "text-scil" },
-  completed: { label: "Abgeschlossen", color: "text-emerald-400" },
+  invited: { label: "Eingeladen", color: "text-blue-600" },
+  pending: { label: "Ausstehend", color: "text-amber-600" },
+  active: { label: "Aktiv", color: "text-scil-dark" },
+  completed: { label: "Abgeschlossen", color: "text-emerald-600" },
   archived: { label: "Archiviert", color: "text-slate-500" },
 };
 
@@ -42,34 +42,34 @@ export function CoachSidebar({
         <div className="px-4 pb-3 grid grid-cols-2 gap-2">
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-slate-900 stat-number">{stats.total_coachees}</div>
-            <div className="text-[10px] text-slate-400">Coachees</div>
+            <div className="text-[10px] text-slate-500">Coachees</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-scil stat-number">{stats.active_diagnostics}</div>
-            <div className="text-[10px] text-slate-400">Aktive Diag.</div>
+            <div className="text-[10px] text-slate-500">Aktive Diag.</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
-            <div className="text-lg font-bold text-emerald-400 stat-number">{stats.codes_available}</div>
-            <div className="text-[10px] text-slate-400">Codes</div>
+            <div className="text-lg font-bold text-emerald-600 stat-number">{stats.codes_available}</div>
+            <div className="text-[10px] text-slate-500">Codes</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
-            <div className="text-lg font-bold text-blue-400 stat-number">{stats.completed_diagnostics}</div>
-            <div className="text-[10px] text-slate-400">Abgeschl.</div>
+            <div className="text-lg font-bold text-blue-600 stat-number">{stats.completed_diagnostics}</div>
+            <div className="text-[10px] text-slate-500">Abgeschl.</div>
           </div>
         </div>
       )}
 
       {/* Coachee list */}
       <div className="px-4 pb-3 flex-1 overflow-y-auto">
-        <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Coachees</div>
+        <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Coachees</div>
         {coachees.length === 0 ? (
           <div className="text-center py-4">
-            <p className="text-xs text-slate-400 mb-3">Noch keine Coachees</p>
+            <p className="text-xs text-slate-500 mb-3">Noch keine Coachees</p>
           </div>
         ) : (
           <div className="space-y-1">
             {coachees.map((c) => {
-              const statusInfo = STATUS_LABELS[c.status] || { label: c.status, color: "text-slate-400" };
+              const statusInfo = STATUS_LABELS[c.status] || { label: c.status, color: "text-slate-500" };
               const isSelected = selectedId === c.id;
               return (
                 <button
@@ -81,7 +81,7 @@ export function CoachSidebar({
                       : "hover:bg-black/[0.03] border border-transparent"
                   }`}
                 >
-                  <div className="w-7 h-7 rounded-full bg-slate-100 border border-black/[0.06] flex items-center justify-center text-slate-400 text-xs font-medium flex-shrink-0 ring-1 ring-black/[0.06]">
+                  <div className="w-7 h-7 rounded-full bg-slate-100 border border-black/[0.06] flex items-center justify-center text-slate-500 text-xs font-medium flex-shrink-0 ring-1 ring-black/[0.06]">
                     {(c.coachee_name || c.coachee_email).charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

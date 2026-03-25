@@ -23,25 +23,25 @@ const AREA_LABELS: Record<string, string> = {
 };
 
 const FREQ_LABELS: Record<string, string> = {
-  innere_praesenz: "Inn. Praesenz",
-  innere_ueberzeugung: "Inn. Ueberzg.",
-  prozessfokussierung: "Prozessfokus",
-  emotionalitaet: "Emotionalitaet",
-  erscheinungsbild: "Erscheinung",
+  innere_praesenz: "Inn. Praes.",
+  innere_ueberzeugung: "Inn. Uebzg.",
+  prozessfokussierung: "Prozessfok.",
+  emotionalitaet: "Emotional.",
+  erscheinungsbild: "Erschein.",
   mimik: "Mimik",
   gestik: "Gestik",
-  raeumliche_praesenz: "Raumpraesenz",
-  sachlichkeit: "Sachlichkeit",
+  raeumliche_praesenz: "Raumpr.",
+  sachlichkeit: "Sachlichk.",
   analytik: "Analytik",
   struktur: "Struktur",
   zielorientierung: "Zielorient.",
   stimme: "Stimme",
-  artikulation: "Artikulation",
-  beredsamkeit: "Beredsamkeit",
-  bildhaftigkeit: "Bildhaftigkeit",
+  artikulation: "Artikulat.",
+  beredsamkeit: "Beredsam.",
+  bildhaftigkeit: "Bildhaft.",
 };
 
-export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
+export function SCILPolygon({ scores, size = 280 }: SCILPolygonProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -52,6 +52,7 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
+    // Canvas = exactly the size prop, polygon shrunk to leave room for labels
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     canvas.style.width = `${size}px`;
@@ -60,7 +61,8 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
 
     const cx = size / 2;
     const cy = size / 2;
-    const maxRadius = size / 2 - 40;
+    // Shrink polygon radius to leave generous room for labels inside canvas
+    const maxRadius = size / 2 - 55;
 
     // Collect all frequencies in order (4 areas x 4 frequencies)
     const areas = ["sensus", "corpus", "intellektus", "lingua"] as const;
@@ -77,7 +79,7 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
     if (n === 0) return;
     const angleStep = (2 * Math.PI) / n;
 
-    // Clear — transparent for dark theme
+    // Clear
     ctx.clearRect(0, 0, size, size);
 
     // Draw grid rings (0-4 scale)
@@ -86,14 +88,16 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, 2 * Math.PI);
       ctx.strokeStyle =
-        ring === 4 ? "rgba(148,163,184,0.15)" : "rgba(148,163,184,0.08)";
+        ring === 4 ? "rgba(100,116,139,0.18)" : "rgba(100,116,139,0.08)";
       ctx.lineWidth = ring === 4 ? 1 : 0.5;
       ctx.stroke();
 
       // Ring label
-      ctx.fillStyle = "rgba(148,163,184,0.3)";
+      ctx.fillStyle = "rgba(100,116,139,0.35)";
       ctx.font = "9px system-ui";
-      ctx.fillText(String(ring), cx + 3, cy - r + 10);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(String(ring), cx + 3, cy - r - 1);
     }
 
     // Draw axis lines
@@ -105,7 +109,7 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(x, y);
-      ctx.strokeStyle = "rgba(148,163,184,0.06)";
+      ctx.strokeStyle = "rgba(100,116,139,0.07)";
       ctx.lineWidth = 0.5;
       ctx.stroke();
     }
@@ -121,7 +125,7 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.fillStyle = "rgba(232,141,42,0.08)";
+    ctx.fillStyle = "rgba(232,141,42,0.07)";
     ctx.fill();
 
     // Draw polygon outline with area colors
@@ -154,32 +158,39 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
 
       // Dot
       ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.arc(x, y, 3.5, 0, 2 * Math.PI);
       ctx.fillStyle = AREA_COLORS[allFreqs[i].area];
       ctx.fill();
-      ctx.strokeStyle = "#0F172A";
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Label
-      const labelR = maxRadius + 20;
+      // Label + score — placed just outside the outer ring
+      const labelR = maxRadius + 12;
       const lx = cx + labelR * Math.cos(angle);
       const ly = cy + labelR * Math.sin(angle);
-      ctx.fillStyle = "rgba(203,213,225,0.6)";
-      ctx.font = "8px system-ui";
+
+      const label = FREQ_LABELS[allFreqs[i].key] || allFreqs[i].key;
+      const scoreVal = allFreqs[i].value.toFixed(1);
+
+      // Text alignment based on position
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
       ctx.textAlign =
-        Math.cos(angle) > 0.1
-          ? "left"
-          : Math.cos(angle) < -0.1
-          ? "right"
-          : "center";
+        cosA > 0.15 ? "left" : cosA < -0.15 ? "right" : "center";
       ctx.textBaseline =
-        Math.sin(angle) > 0.1
-          ? "top"
-          : Math.sin(angle) < -0.1
-          ? "bottom"
-          : "middle";
-      ctx.fillText(FREQ_LABELS[allFreqs[i].key] || allFreqs[i].key, lx, ly);
+        sinA > 0.15 ? "top" : sinA < -0.15 ? "bottom" : "middle";
+
+      // Label name
+      ctx.fillStyle = "rgba(51,65,85,0.7)";
+      ctx.font = "500 9px system-ui";
+      ctx.fillText(label, lx, ly);
+
+      // Score value (colored, below/above label)
+      const scoreOffsetY = sinA > 0.15 ? 11 : sinA < -0.15 ? -11 : 10;
+      ctx.fillStyle = AREA_COLORS[allFreqs[i].area];
+      ctx.font = "bold 9px system-ui";
+      ctx.fillText(scoreVal, lx, ly + scoreOffsetY);
     }
 
     // Area labels in quadrants
@@ -191,20 +202,22 @@ export function SCILPolygon({ scores, size = 300 }: SCILPolygonProps) {
     ];
 
     for (const { area, angle } of areaPositions) {
-      const lr = maxRadius * 0.4;
+      const lr = maxRadius * 0.38;
       const lx = cx + lr * Math.cos(angle);
       const ly = cy + lr * Math.sin(angle);
       ctx.fillStyle = AREA_COLORS[area];
-      ctx.font = "bold 10px system-ui";
+      ctx.font = "bold 11px system-ui";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+      ctx.globalAlpha = 0.8;
       ctx.fillText(AREA_LABELS[area], lx, ly);
+      ctx.globalAlpha = 1.0;
     }
   }, [scores, size]);
 
   return (
-    <div className="flex justify-center polygon-animated">
-      <canvas ref={canvasRef} />
+    <div className="flex justify-center polygon-animated overflow-hidden">
+      <canvas ref={canvasRef} style={{ maxWidth: "100%" }} />
     </div>
   );
 }

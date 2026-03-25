@@ -52,6 +52,7 @@ class PasswordChangeRequest(BaseModel):
 
 
 class CoachInfoResponse(BaseModel):
+    coach_id: str
     coach_name: str
     coach_email: str
     assignment_status: str
@@ -188,6 +189,7 @@ def create_profile_routes(get_db, get_current_user, token_service):
             return None
 
         return CoachInfoResponse(
+            coach_id=str(assignment.coach_id),
             coach_name=coach.full_name,
             coach_email=coach.email,
             assignment_status=assignment.status.value,

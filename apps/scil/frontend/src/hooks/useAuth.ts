@@ -12,11 +12,31 @@ export function useAuth() {
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    // Check for existing token
+    // Check for existing token and always re-decode to get fresh claims
     const token = localStorage.getItem("access_token");
     if (token) {
-      // Validate token by fetching user (simple approach)
-      setUser(JSON.parse(localStorage.getItem("user_data") || "null"));
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        // Check expiry
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          // Token expired — clear and redirect
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user_data");
+        } else {
+          const userData: UserData = {
+            id: payload.sub,
+            email: payload.email || "",
+            full_name: payload.full_name || "",
+            role: payload.role || "trainee",
+          };
+          localStorage.setItem("user_data", JSON.stringify(userData));
+          setUser(userData);
+        }
+      } catch {
+        // Invalid token — clear
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user_data");
+      }
     }
     setIsLoading(false);
   }, []);
@@ -50,7 +70,7 @@ export function useAuth() {
       const userData: UserData = {
         id: payload.sub,
         email: payload.email || email,
-        full_name: payload.full_name || email,
+        full_name: payload.full_name || "",
         role: payload.role || "trainee",
       };
       localStorage.setItem("user_data", JSON.stringify(userData));

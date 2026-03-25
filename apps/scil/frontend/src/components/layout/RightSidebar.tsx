@@ -53,9 +53,11 @@ export function RightSidebar({
 
       {!scores && !polygon ? (
         /* Empty state */
-        <div className="flex-1 flex items-center justify-center text-center text-slate-400 px-4">
+        <div className="flex-1 flex items-center justify-center text-center text-slate-500 px-4">
           <div>
-            <div className="text-4xl mb-3 animate-float">&#x1F98E;</div>
+            <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-gradient-to-br from-scil to-scil-dark flex items-center justify-center shadow-glow-sm animate-float">
+              <span className="text-white text-lg font-bold">S</span>
+            </div>
             <p className="text-sm">
               Dein Wirkungsprofil erscheint hier, sobald die Diagnostik beginnt.
             </p>
@@ -118,8 +120,8 @@ export function RightSidebar({
             </div>
           )}
 
-          {/* Frequency Details (when complete) */}
-          {isComplete && polygon && <FrequencyList polygon={polygon} />}
+          {/* Frequency Details — collapsible clusters (always visible when scores exist) */}
+          {(polygon || scores) && <FrequencyList polygon={polygon} scores={scores} />}
 
           {/* Result Summary (when complete) */}
           {isComplete && result && <ResultSummary result={result} />}

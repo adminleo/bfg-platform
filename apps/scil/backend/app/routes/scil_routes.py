@@ -138,6 +138,38 @@ def create_scil_routes(
                 )
             consumed_token = scil_tokens[0]
 
+            # 1:1 code-to-session: check if this token already has an active run
+            if consumed_token:
+                existing_run_result = await db.execute(
+                    select(DiagnosticRun).where(
+                        DiagnosticRun.token_id == consumed_token.id,
+                        DiagnosticRun.status.notin_(["deleted"]),
+                    )
+                )
+                existing_run = existing_run_result.scalar_one_or_none()
+                if existing_run:
+                    # Return existing session instead of creating duplicate
+                    logger.info(
+                        "Token %s already bound to run %s — returning existing session",
+                        str(consumed_token.id)[:8],
+                        str(existing_run.id)[:8],
+                    )
+                    await db.refresh(existing_run)
+                    return SessionResponse(
+                        id=str(existing_run.id),
+                        title=(
+                            body.title if body and body.title
+                            else f"Diagnostik {existing_run.started_at.strftime('%d.%m.%Y')}"
+                        ),
+                        status=existing_run.status,
+                        progress=existing_run.progress,
+                        created_at=existing_run.started_at.isoformat(),
+                        completed_at=(
+                            existing_run.completed_at.isoformat()
+                            if existing_run.completed_at else None
+                        ),
+                    )
+
         # Create a new DiagnosticRun
         run = DiagnosticRun(
             user_id=user.id,
@@ -180,10 +212,12 @@ def create_scil_routes(
 
     @router.get("/sessions", response_model=list[SessionResponse])
     async def list_sessions(
+        limit: int = 50,
+        offset: int = 0,
         db: AsyncSession = Depends(get_db),
         user: User = Depends(get_current_user),
     ):
-        """List all SCIL sessions for the current user."""
+        """List all SCIL sessions for the current user (paginated)."""
         result = await db.execute(
             select(DiagnosticRun)
             .join(Diagnostic)
@@ -193,13 +227,15 @@ def create_scil_routes(
                 DiagnosticRun.status != "deleted",
             )
             .order_by(desc(DiagnosticRun.started_at))
+            .limit(limit)
+            .offset(offset)
         )
         runs = result.scalars().all()
 
         return [
             SessionResponse(
                 id=str(r.id),
-                title=f"Diagnostik {r.started_at.strftime('%d.%m.%Y %H:%M')}",
+                title=(r.answers or {}).get("_title") or f"Diagnostik {r.started_at.strftime('%d.%m.%Y %H:%M')}",
                 status=r.status,
                 progress=r.progress,
                 created_at=r.started_at.isoformat(),

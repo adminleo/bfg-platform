@@ -28,6 +28,16 @@ export function SidebarShell({
 
   return (
     <div className="flex flex-col h-full bg-white/80">
+      {/* SCIL Logo Header — matches central header h-12 */}
+      <div className="flex-shrink-0 h-12 flex items-center gap-2.5 px-4 border-b border-black/[0.06]">
+        <a href="/dashboard" className="flex items-center gap-2.5" title="SCIL Profile">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-scil to-scil-dark flex items-center justify-center shadow-glow-sm">
+            <span className="text-white text-xs font-bold">S</span>
+          </div>
+          <span className="text-sm font-semibold text-slate-700 tracking-tight">S.C.I.L. Profile</span>
+        </a>
+      </div>
+
       {/* Optional header slot */}
       {header && (
         <div className="border-b border-black/[0.06]">{header}</div>

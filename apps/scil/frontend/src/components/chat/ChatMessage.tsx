@@ -20,10 +20,14 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-1 ring-black/[0.06] ${
           isUser
             ? "bg-slate-100 text-slate-700"
-            : "bg-gradient-to-br from-scil to-scil-dark text-white shadow-glow-sm"
+            : "bg-gradient-to-br from-scil to-scil-dark shadow-glow-sm overflow-hidden"
         }`}
       >
-        {isUser ? "Du" : "&#x1F98E;"}
+        {isUser ? (
+          "Du"
+        ) : (
+          <span className="text-white text-xs font-bold">S</span>
+        )}
       </div>
 
       {/* Message Bubble */}

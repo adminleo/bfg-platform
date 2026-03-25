@@ -38,28 +38,43 @@ export default function DashboardPage() {
     setScores,
     setPolygon,
     setClusterProgress,
+    setProgress,
+    setTotalScored,
+    setIsComplete,
+    setResultId,
   } = useSSEChat();
 
-  // Load conversation when switching sessions
+  // Load conversation + restore all progress state when switching sessions
   useEffect(() => {
     if (activeSession) {
       loadConversation(activeSession.conversation);
       if (activeSession.scores) {
         setScores(activeSession.scores);
+      } else {
+        setScores(null);
       }
       if (activeSession.polygon) {
         setPolygon(activeSession.polygon);
+      } else {
+        setPolygon(null);
       }
       if (activeSession.cluster_progress) {
         setClusterProgress(activeSession.cluster_progress);
+      } else {
+        setClusterProgress(null);
       }
       if (activeSession.suggestions && activeSession.suggestions.length > 0) {
         setSuggestions(activeSession.suggestions);
       } else {
         setSuggestions([]);
       }
+      // Restore progress + scored items from persisted backend state
+      setProgress(activeSession.progress || 0);
+      setTotalScored(activeSession.items_scored || 0);
+      setIsComplete(activeSession.status === "completed");
+      setResultId(null); // Will be set if user navigates to results
     }
-  }, [activeSession, loadConversation, setScores, setPolygon, setClusterProgress, setSuggestions]);
+  }, [activeSession, loadConversation, setScores, setPolygon, setClusterProgress, setSuggestions, setProgress, setTotalScored, setIsComplete, setResultId]);
 
   const [needsCode, setNeedsCode] = useState(false);
 
@@ -86,17 +101,6 @@ export default function DashboardPage() {
     await sendMessage(activeSessionId, text);
   };
 
-  const scilHeader = (
-    <div className="p-4">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-xl bg-scil flex items-center justify-center text-slate-900 font-bold text-sm shadow-lg shadow-scil/20">
-          S
-        </div>
-        <span className="font-semibold text-slate-900">S.C.I.L. Profile</span>
-      </div>
-    </div>
-  );
-
   return (
     <>
       {/* Code Required Banner */}
@@ -115,13 +119,13 @@ export default function DashboardPage() {
               </a>
               <a
                 href="/redeem"
-                className="btn-ghost text-slate-600 rounded-xl px-3 py-1.5 text-sm"
+                className="btn-ghost text-white rounded-xl px-3 py-1.5 text-sm"
               >
                 Code einloesen
               </a>
               <button
                 onClick={() => setNeedsCode(false)}
-                className="px-2 py-1.5 text-white/70 hover:text-white transition-colors"
+                className="px-2 py-1.5 text-white hover:text-white transition-colors"
               >
                 &#x2715;
               </button>
@@ -130,7 +134,6 @@ export default function DashboardPage() {
         </div>
       )}
       <AppShell
-        leftHeader={scilHeader}
         leftSidebar={
           <LeftSidebar
             sessions={sessions}

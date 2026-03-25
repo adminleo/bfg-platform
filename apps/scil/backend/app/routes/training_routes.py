@@ -54,6 +54,13 @@ class ContentItemResponse(BaseModel):
     duration_minutes: int
     body: dict
     tags: list
+    author: str | None = None
+    author_bio: str | None = None
+    author_image_url: str | None = None
+    is_premium: bool = False
+    price_cents: int | None = None
+    sort_order: int = 0
+    lesson_count: int = 0
 
 
 class TrainingDayResponse(BaseModel):
@@ -120,23 +127,40 @@ class ProgressResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _format_content(c) -> ContentItemResponse:
+    """Convert a LearningContent model to response format."""
+    try:
+        lesson_count = len(c.lessons) if c.lessons else 0
+    except Exception:
+        # lessons relationship may not be loaded (async lazy-load issue)
+        lesson_count = 0
+    return ContentItemResponse(
+        id=str(c.id),
+        slug=c.slug,
+        title=c.title,
+        description=c.description,
+        content_type=c.content_type.value,
+        area=c.area.value,
+        target_frequency=c.target_frequency,
+        difficulty=c.difficulty,
+        duration_minutes=c.duration_minutes,
+        body=c.body or {},
+        tags=c.tags or [],
+        author=c.author,
+        author_bio=c.author_bio,
+        author_image_url=c.author_image_url,
+        is_premium=c.is_premium if hasattr(c, "is_premium") else False,
+        price_cents=c.price_cents if hasattr(c, "price_cents") else None,
+        sort_order=c.sort_order if hasattr(c, "sort_order") else 0,
+        lesson_count=lesson_count,
+    )
+
+
 def _format_day(day: TrainingDay) -> TrainingDayResponse:
     """Convert a TrainingDay model to response format."""
     content = None
     if day.content:
-        content = ContentItemResponse(
-            id=str(day.content.id),
-            slug=day.content.slug,
-            title=day.content.title,
-            description=day.content.description,
-            content_type=day.content.content_type.value,
-            area=day.content.area.value,
-            target_frequency=day.content.target_frequency,
-            difficulty=day.content.difficulty,
-            duration_minutes=day.content.duration_minutes,
-            body=day.content.body or {},
-            tags=day.content.tags or [],
-        )
+        content = _format_content(day.content)
 
     progress = None
     if day.progress:
@@ -383,21 +407,94 @@ def create_training_routes(get_db, get_current_user, training_service):
         """Get available training content library."""
         svc = _svc()
         content = await svc.get_content_library(db, area=area)
-        return [
-            ContentItemResponse(
-                id=str(c.id),
-                slug=c.slug,
-                title=c.title,
-                description=c.description,
-                content_type=c.content_type.value,
-                area=c.area.value,
-                target_frequency=c.target_frequency,
-                difficulty=c.difficulty,
-                duration_minutes=c.duration_minutes,
-                body=c.body or {},
-                tags=c.tags or [],
-            )
-            for c in content
-        ]
+        return [_format_content(c) for c in content]
+
+    # -- Enrollment: Enroll in content --
+    @router.post("/enroll/{content_id}")
+    async def enroll_in_content(
+        content_id: str,
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        """Enroll in a training content. Free content is immediate; premium requires purchase."""
+        svc = _svc()
+        try:
+            enrollment = await svc.enroll(user.id, UUID(content_id), db)
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        return {
+            "id": str(enrollment.id),
+            "content_id": str(enrollment.content_id),
+            "status": enrollment.status.value,
+            "enrolled_at": enrollment.enrolled_at.isoformat(),
+        }
+
+    # -- Enrollment: List user's enrollments --
+    @router.get("/enrollments")
+    async def list_enrollments(
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        """List all training enrollments for the current user."""
+        svc = _svc()
+        enrollments = await svc.get_user_enrollments(user.id, db)
+        result = []
+        for e in enrollments:
+            item = {
+                "id": str(e.id),
+                "content_id": str(e.content_id),
+                "status": e.status.value,
+                "enrolled_at": e.enrolled_at.isoformat(),
+                "completed_at": e.completed_at.isoformat() if e.completed_at else None,
+            }
+            try:
+                if e.content:
+                    item["content_title"] = e.content.title
+                    item["content_area"] = e.content.area.value
+                    item["content_type"] = e.content.content_type.value
+            except Exception:
+                pass
+            result.append(item)
+        return result
+
+    # -- Enrollment: Check enrollment for specific content --
+    @router.get("/enrollments/{content_id}")
+    async def check_enrollment(
+        content_id: str,
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        """Check enrollment status for a specific training content."""
+        svc = _svc()
+        enrollment = await svc.get_enrollment(user.id, UUID(content_id), db)
+        if not enrollment:
+            return {"enrolled": False}
+        return {
+            "enrolled": True,
+            "id": str(enrollment.id),
+            "status": enrollment.status.value,
+            "enrolled_at": enrollment.enrolled_at.isoformat(),
+            "completed_at": enrollment.completed_at.isoformat() if enrollment.completed_at else None,
+        }
+
+    # -- Enrollment: Complete enrollment --
+    @router.post("/enrollments/{content_id}/complete")
+    async def complete_enrollment(
+        content_id: str,
+        user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        """Mark a training enrollment as completed."""
+        svc = _svc()
+        try:
+            enrollment = await svc.complete_enrollment(user.id, UUID(content_id), db)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        return {
+            "id": str(enrollment.id),
+            "content_id": str(enrollment.content_id),
+            "status": enrollment.status.value,
+            "completed_at": enrollment.completed_at.isoformat() if enrollment.completed_at else None,
+        }
 
     return router

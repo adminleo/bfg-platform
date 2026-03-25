@@ -4,7 +4,7 @@ import type { DiagnosticCode } from "@/lib/types";
 
 interface CodesSidebarProps {
   codes: DiagnosticCode[];
-  onRedeemClick: () => void;
+  onRedeemClick?: () => void;
 }
 
 export function CodesSidebar({ codes, onRedeemClick }: CodesSidebarProps) {

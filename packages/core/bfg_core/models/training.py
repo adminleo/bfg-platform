@@ -77,7 +77,7 @@ class LearningContent(Base):
     area: Mapped[ContentArea] = mapped_column(SAEnum(ContentArea))
 
     # Which SCIL frequency this targets (e.g., "S01", "C03", "I02", "L04")
-    target_frequency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    target_frequency: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Difficulty: 1 (beginner) to 5 (advanced)
     difficulty: Mapped[int] = mapped_column(Integer, default=2)
@@ -94,10 +94,36 @@ class LearningContent(Base):
     # Tags for filtering
     tags: Mapped[list] = mapped_column(JSONB, default=list)
 
+    # Author information
+    author: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    author_bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    author_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # Premium flag — content that requires purchase
+    is_premium: Mapped[bool] = mapped_column(Boolean, default=False)
+    price_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # Ordering within a content sequence
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Lecture / lesson structure (for multi-part trainings)
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_contents.id"), nullable=True
+    )
+    lesson_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Self-referential relationship for lessons within a training
+    lessons: Mapped[list["LearningContent"]] = relationship(
+        "LearningContent",
+        foreign_keys="LearningContent.parent_id",
+        order_by="LearningContent.lesson_number",
+        lazy="selectin",
     )
 
 
@@ -152,7 +178,7 @@ class TrainingPlan(Base):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821
     days: Mapped[list["TrainingDay"]] = relationship(
         back_populates="plan", lazy="selectin",
         order_by="TrainingDay.week_number, TrainingDay.day_number",
@@ -254,4 +280,49 @@ class TrainingProgress(Base):
 
     # Relationships
     day: Mapped["TrainingDay"] = relationship(back_populates="progress")
-    user: Mapped["User"] = relationship()  # noqa: F821
+    user: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821
+
+
+# ---------------------------------------------------------------------------
+# TrainingEnrollment — User enrollment in a training content
+# ---------------------------------------------------------------------------
+
+class EnrollmentStatus(str, enum.Enum):
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class TrainingEnrollment(Base):
+    """Tracks a user's enrollment in a specific learning content."""
+
+    __tablename__ = "training_enrollments"
+    __table_args__ = (
+        UniqueConstraint("user_id", "content_id", name="uq_user_content_enrollment"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id")
+    )
+    content_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_contents.id")
+    )
+
+    status: Mapped[EnrollmentStatus] = mapped_column(
+        SAEnum(EnrollmentStatus), default=EnrollmentStatus.ACTIVE
+    )
+
+    enrolled_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # For premium content: link to a purchase that unlocked it
+    purchase_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821
+    content: Mapped["LearningContent"] = relationship(lazy="selectin")

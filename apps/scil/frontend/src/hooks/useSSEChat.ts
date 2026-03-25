@@ -21,6 +21,10 @@ interface UseSSEChatReturn {
   setScores: (scores: SCILScores | null) => void;
   setPolygon: (polygon: PolygonData | null) => void;
   setClusterProgress: (cp: ClusterProgress | null) => void;
+  setProgress: (progress: number) => void;
+  setTotalScored: (n: number) => void;
+  setIsComplete: (v: boolean) => void;
+  setResultId: (id: string | null) => void;
 }
 
 let messageIdCounter = 0;
@@ -183,5 +187,9 @@ export function useSSEChat(): UseSSEChatReturn {
     setScores,
     setPolygon,
     setClusterProgress,
+    setProgress,
+    setTotalScored,
+    setIsComplete,
+    setResultId,
   };
 }

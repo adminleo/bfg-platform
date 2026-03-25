@@ -21,9 +21,9 @@ export function ResultSummary({ result }: ResultSummaryProps) {
           <div className="space-y-2">
             {result.recommendations.map((rec, i) => (
               <div key={i} className="flex items-center gap-2 text-xs">
-                <span className="text-yellow-400">↑</span>
+                <span className="text-amber-600">↑</span>
                 <span className="text-slate-600">{rec.label}</span>
-                <span className="text-slate-400">({rec.current_score.toFixed(1)})</span>
+                <span className="text-slate-500">({rec.current_score.toFixed(1)})</span>
               </div>
             ))}
           </div>

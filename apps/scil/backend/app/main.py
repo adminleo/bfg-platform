@@ -67,6 +67,29 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Dev migration: add missing columns to existing tables
+    from sqlalchemy import text
+    async with engine.begin() as conn:
+        migration_statements = [
+            # learning_contents — author & premium fields (added in training overhaul)
+            # Widen target_frequency from VARCHAR(10) to VARCHAR(50) for full frequency names
+            "ALTER TABLE learning_contents ALTER COLUMN target_frequency TYPE VARCHAR(50)",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS author VARCHAR(255)",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS author_bio TEXT",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS author_image_url VARCHAR(500)",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS price_cents INTEGER",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES learning_contents(id)",
+            "ALTER TABLE learning_contents ADD COLUMN IF NOT EXISTS lesson_number INTEGER",
+        ]
+        for stmt in migration_statements:
+            try:
+                await conn.execute(text(stmt))
+            except Exception:
+                pass  # Column already exists or table doesn't exist yet
+        logger.info("Dev migration: schema updates applied")
+
     # Initialize AI Service
     ai_service = AIService(settings, async_session)
     logger.info(
@@ -127,12 +150,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_cors_origins = list({
+    settings.frontend_url,       # from FRONTEND_URL env (docker-compose)
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+})
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

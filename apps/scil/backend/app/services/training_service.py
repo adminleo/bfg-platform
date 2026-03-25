@@ -20,6 +20,7 @@ from bfg_core.models.training import (
     TrainingPlan, PlanStatus,
     TrainingDay, DayStatus,
     TrainingProgress,
+    TrainingEnrollment, EnrollmentStatus,
 )
 from bfg_core.services.ai_service import AIService
 
@@ -624,12 +625,18 @@ Gib einen kleinen Tipp fuer die Praxis."""
         self, db: AsyncSession, area: str | None = None
     ) -> list[LearningContent]:
         """Get available learning content, optionally filtered by area."""
-        stmt = select(LearningContent).where(LearningContent.is_active == True)  # noqa: E712
+        from sqlalchemy.orm import selectinload
+
+        stmt = select(LearningContent).where(
+            LearningContent.is_active == True,  # noqa: E712
+            LearningContent.parent_id.is_(None),  # Only top-level content
+        )
         if area:
             try:
                 stmt = stmt.where(LearningContent.area == ContentArea(area))
             except ValueError:
                 pass
+        stmt = stmt.options(selectinload(LearningContent.lessons))
         stmt = stmt.order_by(LearningContent.area, LearningContent.difficulty)
         result = await db.execute(stmt)
         return list(result.scalars().all())
@@ -734,3 +741,94 @@ Gib einen kleinen Tipp fuer die Praxis."""
                 break
 
         return streak
+
+    # ------------------------------------------------------------------
+    # Enrollment Management
+    # ------------------------------------------------------------------
+
+    async def enroll(
+        self, user_id: UUID, content_id: UUID, db: AsyncSession
+    ) -> TrainingEnrollment:
+        """Enroll a user in a training content.
+
+        Free content: immediate enrollment.
+        Premium content: rejected (must purchase first).
+        """
+        content = await db.get(LearningContent, content_id)
+        if not content:
+            raise ValueError("Training nicht gefunden")
+        if not content.is_active:
+            raise ValueError("Dieses Training ist nicht mehr verfuegbar")
+
+        # Check premium gating
+        if content.is_premium and content.price_cents:
+            raise ValueError("Premium-Inhalt — bitte zuerst ueber Ressourcen kaufen")
+
+        # Check existing enrollment
+        existing_stmt = select(TrainingEnrollment).where(
+            TrainingEnrollment.user_id == user_id,
+            TrainingEnrollment.content_id == content_id,
+        )
+        existing_result = await db.execute(existing_stmt)
+        existing = existing_result.scalar_one_or_none()
+        if existing:
+            # Re-activate if cancelled
+            if existing.status == EnrollmentStatus.CANCELLED:
+                existing.status = EnrollmentStatus.ACTIVE
+                existing.enrolled_at = datetime.utcnow()
+                existing.completed_at = None
+                await db.commit()
+                await db.refresh(existing)
+            return existing
+
+        enrollment = TrainingEnrollment(
+            user_id=user_id,
+            content_id=content_id,
+            status=EnrollmentStatus.ACTIVE,
+        )
+        db.add(enrollment)
+        await db.commit()
+        await db.refresh(enrollment)
+        return enrollment
+
+    async def get_enrollment(
+        self, user_id: UUID, content_id: UUID, db: AsyncSession
+    ) -> TrainingEnrollment | None:
+        """Check enrollment status for a specific content."""
+        stmt = select(TrainingEnrollment).where(
+            TrainingEnrollment.user_id == user_id,
+            TrainingEnrollment.content_id == content_id,
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_user_enrollments(
+        self, user_id: UUID, db: AsyncSession
+    ) -> list[TrainingEnrollment]:
+        """List all enrollments for a user."""
+        from sqlalchemy.orm import selectinload
+
+        stmt = (
+            select(TrainingEnrollment)
+            .where(TrainingEnrollment.user_id == user_id)
+            .options(selectinload(TrainingEnrollment.content))
+            .order_by(TrainingEnrollment.enrolled_at.desc())
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def complete_enrollment(
+        self, user_id: UUID, content_id: UUID, db: AsyncSession
+    ) -> TrainingEnrollment:
+        """Mark an enrollment as completed."""
+        enrollment = await self.get_enrollment(user_id, content_id, db)
+        if not enrollment:
+            raise ValueError("Nicht eingeschrieben")
+        if enrollment.status == EnrollmentStatus.COMPLETED:
+            return enrollment
+
+        enrollment.status = EnrollmentStatus.COMPLETED
+        enrollment.completed_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(enrollment)
+        return enrollment

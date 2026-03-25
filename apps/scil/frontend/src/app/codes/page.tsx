@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useCodes } from "@/hooks/useCodes";
 import { AppShell } from "@/components/layout/AppShell";
 import { CodesSidebar } from "@/components/codes/CodesSidebar";
-import type { CodePackage, DiagnosticCode } from "@/lib/types";
+import type { DiagnosticCode } from "@/lib/types";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   emitted: { label: "Verfuegbar", color: "text-emerald-400" },
@@ -15,68 +14,6 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   consumed: { label: "Verwendet", color: "text-slate-500" },
   expired: { label: "Abgelaufen", color: "text-red-400" },
 };
-
-function PackageCard({
-  pkg,
-  onBuy,
-  onDevBuy,
-  isLoading,
-  isDev,
-}: {
-  pkg: CodePackage;
-  onBuy: () => void;
-  onDevBuy: () => void;
-  isLoading: boolean;
-  isDev: boolean;
-}) {
-  const unitPrice = (pkg.unit_price_cents / 100).toFixed(2);
-  const totalPrice = (pkg.total_price_cents / 100).toFixed(2);
-
-  return (
-    <div className="glass-card p-6 flex flex-col">
-      <div className="flex-1">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-lg font-semibold text-slate-900">{pkg.label}</h3>
-          {pkg.savings_percent > 0 && (
-            <span className="bg-scil/20 text-scil text-xs font-medium px-2 py-1 rounded-full">
-              -{pkg.savings_percent}%
-            </span>
-          )}
-        </div>
-        <div className="mb-4">
-          <span className="text-3xl font-bold text-slate-900 stat-number">{unitPrice} EUR</span>
-          <span className="text-slate-500 text-sm ml-1">/ Code</span>
-        </div>
-        {pkg.quantity > 1 && (
-          <p className="text-slate-500 text-sm mb-4">
-            {pkg.quantity} Codes = {totalPrice} EUR gesamt
-          </p>
-        )}
-      </div>
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={onBuy}
-          disabled={isLoading}
-          className="w-full py-2.5 btn-glass text-white font-medium
-                     rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Wird verarbeitet..." : "Jetzt kaufen"}
-        </button>
-        {isDev && (
-          <button
-            onClick={onDevBuy}
-            disabled={isLoading}
-            className="w-full py-2 btn-ghost text-slate-600
-                       text-sm rounded-xl transition-colors
-                       disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Dev: Gratis generieren
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function CodeRow({
   code,
@@ -190,9 +127,11 @@ function CodeRow({
 }
 
 export default function CodesPage() {
-  const router = useRouter();
-  const { codes, packages, isLoading, error, purchasePackage, devPurchase, activateCode } = useCodes();
+  const { codes, isLoading, error, redeemCode, activateCode, devPurchase } = useCodes();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [redeemInput, setRedeemInput] = useState("");
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+  const [redeemSuccess, setRedeemSuccess] = useState<string | null>(null);
 
   const isDev = process.env.NODE_ENV === "development" || typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const activeCodes = codes.filter((c) => ["emitted", "sold", "activated"].includes(c.status));
@@ -206,11 +145,21 @@ export default function CodesPage() {
     }
   };
 
-  const handleDevPurchase = async (packageType: string) => {
-    const purchase = await devPurchase(packageType);
-    if (purchase) {
-      setSuccessMsg("Code generiert und aktiviert! Du kannst jetzt eine Diagnostik starten.");
-      setTimeout(() => setSuccessMsg(null), 5000);
+  const handleRedeem = async () => {
+    const trimmed = redeemInput.trim();
+    if (!trimmed) return;
+
+    setRedeemError(null);
+    setRedeemSuccess(null);
+
+    const result = await redeemCode(trimmed);
+    if (result.success) {
+      setRedeemSuccess(result.message || "Code erfolgreich eingeloest!");
+      setRedeemInput("");
+      setTimeout(() => setRedeemSuccess(null), 5000);
+    } else {
+      setRedeemError(result.message);
+      setTimeout(() => setRedeemError(null), 5000);
     }
   };
 
@@ -219,7 +168,6 @@ export default function CodesPage() {
       leftSidebar={
         <CodesSidebar
           codes={codes}
-          onRedeemClick={() => router.push("/redeem")}
         />
       }
       rightDefaultOpen={false}
@@ -251,29 +199,55 @@ export default function CodesPage() {
 
         {/* Page title */}
         <div className="mb-6 animate-fade-in-up">
-          <h1 className="text-xl font-bold text-slate-900">SCIL Diagnostik-Codes</h1>
+          <h1 className="text-xl font-bold text-slate-900">Meine Diagnostik-Codes</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Kaufe Codes fuer die SCIL-Wirkungsdiagnostik
+            Verwalte deine Codes fuer die SCIL-Wirkungsdiagnostik
           </p>
         </div>
 
-        {/* Package Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12 animate-fade-in-up">
-          {packages.map((pkg, index) => (
-            <div key={pkg.type} className={`stagger-${Math.min(index + 1, 6)} animate-fade-in-up`}>
-              <PackageCard
-                pkg={pkg}
-                onBuy={() => purchasePackage(pkg.type)}
-                onDevBuy={() => handleDevPurchase(pkg.type)}
-                isLoading={isLoading}
-                isDev={isDev}
-              />
+        {/* Inline redeem form */}
+        <div className="glass-card p-6 mb-8 animate-fade-in-up">
+          <h2 className="text-lg font-semibold text-slate-900 mb-3">Code einloesen</h2>
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              value={redeemInput}
+              onChange={(e) => setRedeemInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRedeem();
+              }}
+              placeholder="Code eingeben..."
+              className="glass-input flex-1 px-4 py-2.5 text-slate-900 placeholder-slate-400 rounded-xl"
+              disabled={isLoading}
+            />
+            <button
+              onClick={handleRedeem}
+              disabled={isLoading || !redeemInput.trim()}
+              className="px-5 py-2.5 btn-glass text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Wird eingeloest..." : "Einloesen"}
+            </button>
+          </div>
+          {redeemSuccess && (
+            <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{redeemSuccess}</span>
             </div>
-          ))}
+          )}
+          {redeemError && (
+            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span>{redeemError}</span>
+            </div>
+          )}
         </div>
 
         {/* My Codes */}
-        {codes.length > 0 && (
+        {codes.length > 0 ? (
           <div className="animate-fade-in-up">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">Meine Codes</h2>
 
@@ -312,6 +286,22 @@ export default function CodesPage() {
                 </div>
               </div>
             )}
+          </div>
+        ) : (
+          /* Empty state */
+          <div className="glass-card p-8 text-center animate-fade-in-up">
+            <svg className="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <p className="text-slate-500 mb-3">
+              Keine Codes vorhanden. Loese oben einen Code ein oder kaufe neue Codes.
+            </p>
+            <a
+              href="/resources"
+              className="inline-block px-5 py-2.5 btn-glass text-white font-medium rounded-xl transition-colors"
+            >
+              Codes kaufen
+            </a>
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ from bfg_core.models.training import (
     TrainingPlan, PlanStatus,
     TrainingDay, DayStatus,
     TrainingProgress,
+    TrainingEnrollment, EnrollmentStatus,
 )
 from bfg_core.models.booking import (
     AvailabilitySlot, SlotRecurrence,
@@ -42,6 +43,8 @@ __all__ = [
     "TrainingDay",
     "DayStatus",
     "TrainingProgress",
+    "TrainingEnrollment",
+    "EnrollmentStatus",
     "AvailabilitySlot",
     "SlotRecurrence",
     "Booking",

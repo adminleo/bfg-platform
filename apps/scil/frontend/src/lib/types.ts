@@ -228,6 +228,13 @@ export interface TrainingContentItem {
   duration_minutes: number;
   body: Record<string, unknown>;
   tags: string[];
+  author: string | null;
+  author_bio: string | null;
+  author_image_url: string | null;
+  is_premium: boolean;
+  price_cents: number | null;
+  sort_order: number;
+  lesson_count: number;
 }
 
 export interface TrainingDayProgress {

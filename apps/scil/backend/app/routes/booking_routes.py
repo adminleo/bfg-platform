@@ -151,6 +151,12 @@ async def _format_booking(booking: Booking, db: AsyncSession) -> BookingResponse
     coach = await db.get(User, booking.coach_id)
     coachee = await db.get(User, booking.coachee_id)
 
+    # Defensive access — briefing may fail with MissingGreenlet in async context
+    try:
+        has_briefing = booking.briefing is not None
+    except Exception:
+        has_briefing = False
+
     return BookingResponse(
         id=str(booking.id),
         coach_id=str(booking.coach_id),
@@ -166,7 +172,7 @@ async def _format_booking(booking: Booking, db: AsyncSession) -> BookingResponse
         meeting_link=booking.meeting_link,
         completed_at=booking.completed_at.isoformat() if booking.completed_at else None,
         summary=booking.summary,
-        has_briefing=booking.briefing is not None,
+        has_briefing=has_briefing,
         created_at=booking.created_at.isoformat(),
     )
 
@@ -186,7 +192,13 @@ def create_booking_routes(get_db, get_current_user, booking_service):
     router = APIRouter(prefix="/bookings", tags=["bookings"])
 
     def _svc():
-        return booking_service() if callable(booking_service) else booking_service
+        svc = booking_service() if callable(booking_service) else booking_service
+        if svc is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="BookingService nicht initialisiert",
+            )
+        return svc
 
     # -- Coach: Availability Slots --
 

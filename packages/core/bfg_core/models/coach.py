@@ -74,12 +74,12 @@ class CoachAssignment(Base):
 
     # Relationships
     coach: Mapped["User"] = relationship(  # noqa: F821
-        foreign_keys=[coach_id], overlaps="coaching",
+        foreign_keys=[coach_id], overlaps="coaching", lazy="selectin",
     )
     coachee: Mapped["User | None"] = relationship(  # noqa: F821
-        foreign_keys=[coachee_id], overlaps="coached_by",
+        foreign_keys=[coachee_id], overlaps="coached_by", lazy="selectin",
     )
-    token: Mapped["DiagnosticToken | None"] = relationship()  # noqa: F821
+    token: Mapped["DiagnosticToken | None"] = relationship(lazy="selectin")  # noqa: F821
 
     @staticmethod
     def generate_invitation_token() -> str:

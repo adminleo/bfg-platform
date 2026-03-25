@@ -88,7 +88,7 @@ class AvailabilitySlot(Base):
     )
 
     # Relationships
-    coach: Mapped["User"] = relationship()  # noqa: F821
+    coach: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821
 
 
 # ---------------------------------------------------------------------------
@@ -142,9 +142,9 @@ class Booking(Base):
     )
 
     # Relationships
-    coach: Mapped["User"] = relationship(foreign_keys=[coach_id])  # noqa: F821
-    coachee: Mapped["User"] = relationship(foreign_keys=[coachee_id])  # noqa: F821
-    slot: Mapped["AvailabilitySlot | None"] = relationship()
+    coach: Mapped["User"] = relationship(foreign_keys=[coach_id], lazy="selectin")  # noqa: F821
+    coachee: Mapped["User"] = relationship(foreign_keys=[coachee_id], lazy="selectin")  # noqa: F821
+    slot: Mapped["AvailabilitySlot | None"] = relationship(lazy="selectin")
     briefing: Mapped["SessionBriefing | None"] = relationship(
         back_populates="booking", uselist=False, lazy="selectin"
     )

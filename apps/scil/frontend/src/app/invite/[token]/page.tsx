@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { api } from "@/lib/api";
 
 interface InvitationInfo {
   coach_name: string;
@@ -31,16 +30,10 @@ export default function InvitationPage() {
   useEffect(() => {
     if (!token) return;
 
-    fetch(`${API_URL}/api/v1/invite/${token}`)
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || "Einladung nicht gefunden");
-        }
-        return res.json();
-      })
+    api
+      .get<InvitationInfo>(`/invite/${token}`)
       .then((data) => setInfo(data))
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(e instanceof Error ? e.message : "Einladung nicht gefunden"))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -60,31 +53,21 @@ export default function InvitationPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/invite/${token}/accept`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: fullName,
-          password,
-        }),
-      });
+      const data = await api.post<{ access_token: string; user_id: string }>(
+        `/invite/${token}/accept`,
+        { full_name: fullName, password }
+      );
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || "Fehler bei der Registrierung");
-      }
-
-      const data = await res.json();
-
-      // Auto-login: store JWT and user data
+      // Auto-login: store JWT and decode role from token
       localStorage.setItem("access_token", data.access_token);
+      const payload = JSON.parse(atob(data.access_token.split(".")[1]));
       localStorage.setItem(
         "user_data",
         JSON.stringify({
           id: data.user_id,
-          email: info?.coachee_email || "",
+          email: info?.coachee_email || payload.email || "",
           full_name: fullName,
-          role: "trainee",
+          role: payload.role || "trainee",
         })
       );
 
@@ -115,12 +98,12 @@ export default function InvitationPage() {
       <div className="min-h-screen bg-surface-dark flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-surface border border-border rounded-xl p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-white mb-2">Einladung ungueltig</h1>
-          <p className="text-slate-400 text-sm mb-6">{error}</p>
+          <h1 className="text-xl font-bold text-slate-900 mb-2">Einladung ungueltig</h1>
+          <p className="text-slate-500 text-sm mb-6">{error}</p>
           <button
             onClick={() => router.push("/login")}
             className="px-6 py-2.5 bg-scil hover:bg-scil-dark text-white font-medium rounded-lg transition-colors"
@@ -142,22 +125,22 @@ export default function InvitationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-white mb-1">Einladung zur SCIL-Diagnostik</h1>
-          <p className="text-slate-400 text-sm">
-            von <span className="text-white font-medium">{info?.coach_name}</span>
+          <h1 className="text-xl font-bold text-slate-900 mb-1">Einladung zur SCIL-Diagnostik</h1>
+          <p className="text-slate-500 text-sm">
+            von <span className="text-slate-900 font-medium">{info?.coach_name}</span>
           </p>
         </div>
 
         {info?.has_code && (
           <div className="mb-6 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-center">
-            <p className="text-emerald-400 text-sm">
+            <p className="text-emerald-600 text-sm">
               Ein Diagnostik-Code wurde fuer dich reserviert.
             </p>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 text-sm">
             {error}
           </div>
         )}
@@ -165,18 +148,18 @@ export default function InvitationPage() {
         {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">E-Mail</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">E-Mail</label>
             <input
               type="email"
               value={info?.coachee_email || ""}
               disabled
               className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                         text-slate-500 cursor-not-allowed"
+                         text-slate-600 cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Vollstaendiger Name *</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Vollstaendiger Name *</label>
             <input
               type="text"
               value={fullName}
@@ -184,12 +167,12 @@ export default function InvitationPage() {
               required
               placeholder="Max Mustermann"
               className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                         text-white placeholder-slate-500 focus:outline-none focus:border-scil"
+                         text-slate-900 placeholder-slate-400 focus:outline-none focus:border-scil"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Passwort *</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Passwort *</label>
             <input
               type="password"
               value={password}
@@ -198,12 +181,12 @@ export default function InvitationPage() {
               minLength={6}
               placeholder="Mindestens 6 Zeichen"
               className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                         text-white placeholder-slate-500 focus:outline-none focus:border-scil"
+                         text-slate-900 placeholder-slate-400 focus:outline-none focus:border-scil"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Passwort bestaetigen *</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Passwort bestaetigen *</label>
             <input
               type="password"
               value={passwordConfirm}
@@ -212,7 +195,7 @@ export default function InvitationPage() {
               minLength={6}
               placeholder="Passwort wiederholen"
               className="w-full px-3 py-2.5 bg-surface-dark border border-border rounded-lg
-                         text-white placeholder-slate-500 focus:outline-none focus:border-scil"
+                         text-slate-900 placeholder-slate-400 focus:outline-none focus:border-scil"
             />
           </div>
 
@@ -226,7 +209,7 @@ export default function InvitationPage() {
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-500 mt-4">
+        <p className="text-center text-xs text-slate-600 mt-4">
           Bereits registriert?{" "}
           <a href="/login" className="text-scil hover:underline">
             Zum Login

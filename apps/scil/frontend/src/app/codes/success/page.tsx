@@ -39,7 +39,7 @@ function PurchaseSuccessContent() {
     if (!purchaseId || !isAuthenticated) return;
 
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 90; // ~3 min with 2s intervals (Stripe webhooks can be slow)
 
     const poll = async () => {
       const data = await getPurchase(purchaseId);

@@ -74,4 +74,4 @@ class CodePurchase(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Relationships
-    buyer: Mapped["User"] = relationship()  # noqa: F821
+    buyer: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821

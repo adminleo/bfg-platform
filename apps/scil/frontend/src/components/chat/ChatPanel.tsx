@@ -55,7 +55,9 @@ export function ChatPanel({
           /* Empty state — no session */
           <div className="flex items-center justify-center h-full animate-fade-in">
             <div className="text-center max-w-md">
-              <div className="text-6xl mb-4 animate-float">&#x1F98E;</div>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-scil to-scil-dark flex items-center justify-center shadow-glow animate-float">
+                <span className="text-white text-2xl font-bold">S</span>
+              </div>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 S.C.I.L. Diagnostik
               </h1>

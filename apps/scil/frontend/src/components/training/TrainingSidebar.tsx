@@ -33,7 +33,7 @@ export function TrainingSidebar({
           </svg>
           <h2 className="text-sm font-semibold text-slate-900">Training</h2>
         </div>
-        <p className="text-xs text-slate-400">SCIL-Mikro-Training</p>
+        <p className="text-xs text-slate-500">SCIL-Mikro-Training</p>
       </div>
 
       {/* Stats mini */}
@@ -41,19 +41,19 @@ export function TrainingSidebar({
         <div className="px-4 pb-3 grid grid-cols-2 gap-2">
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-slate-900 stat-number">{stats.current_streak}</div>
-            <div className="text-[10px] text-slate-400">Tage Serie</div>
+            <div className="text-[10px] text-slate-500">Tage Serie</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-slate-900 stat-number">{stats.total_completed_days}</div>
-            <div className="text-[10px] text-slate-400">Abgeschlossen</div>
+            <div className="text-[10px] text-slate-500">Abgeschlossen</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-slate-900 stat-number">{stats.total_time_minutes}</div>
-            <div className="text-[10px] text-slate-400">Minuten</div>
+            <div className="text-[10px] text-slate-500">Minuten</div>
           </div>
           <div className="bg-black/[0.02] border border-black/[0.06] rounded-xl p-2.5">
             <div className="text-lg font-bold text-slate-900 stat-number">{stats.average_rating ? `${stats.average_rating}` : "-"}</div>
-            <div className="text-[10px] text-slate-400">Bewertung</div>
+            <div className="text-[10px] text-slate-500">Bewertung</div>
           </div>
         </div>
       )}
@@ -61,7 +61,7 @@ export function TrainingSidebar({
       {/* Today mini card */}
       {today?.has_training && today.day && (
         <div className="px-4 pb-3">
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Heute</div>
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Heute</div>
           <div className="bg-scil/[0.08] border border-scil/20 rounded-xl p-3">
             <div className="text-sm font-medium text-slate-900">{today.day.title}</div>
             <div className="text-xs text-slate-500 mt-0.5">
@@ -70,9 +70,9 @@ export function TrainingSidebar({
             </div>
             <div className="mt-1">
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                today.day.status === "completed" ? "bg-emerald-500/10 text-emerald-400" :
+                today.day.status === "completed" ? "bg-emerald-500/10 text-emerald-600" :
                 today.day.status === "in_progress" ? "bg-scil/10 text-scil" :
-                "bg-amber-500/10 text-amber-400"
+                "bg-amber-500/10 text-amber-600"
               }`}>
                 {today.day.status === "completed" ? "Fertig" :
                  today.day.status === "in_progress" ? "In Arbeit" : "Verfuegbar"}
@@ -84,10 +84,10 @@ export function TrainingSidebar({
 
       {/* Plan list */}
       <div className="px-4 pb-3 flex-1 overflow-y-auto">
-        <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Plaene</div>
+        <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Plaene</div>
         {plans.length === 0 ? (
           <div className="text-center py-4">
-            <p className="text-xs text-slate-400 mb-3">Noch kein Trainingsplan</p>
+            <p className="text-xs text-slate-500 mb-3">Noch kein Trainingsplan</p>
             <button
               onClick={onGeneratePlan}
               disabled={generating}
@@ -114,13 +114,13 @@ export function TrainingSidebar({
                   <div className="flex items-center justify-between mt-1">
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                       plan.status === "active" ? "bg-scil/10 text-scil" :
-                      plan.status === "completed" ? "bg-emerald-500/10 text-emerald-400" :
-                      "bg-slate-500/10 text-slate-400"
+                      plan.status === "completed" ? "bg-emerald-500/10 text-emerald-600" :
+                      "bg-slate-500/10 text-slate-500"
                     }`}>
                       {plan.status === "active" ? "Aktiv" :
                        plan.status === "completed" ? "Fertig" : plan.status}
                     </span>
-                    <span className="text-[10px] text-slate-400 stat-number">
+                    <span className="text-[10px] text-slate-500 stat-number">
                       {Math.round(plan.overall_progress * 100)}%
                     </span>
                   </div>

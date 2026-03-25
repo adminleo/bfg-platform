@@ -52,7 +52,7 @@ export function ScoreProgress({
         <span className="text-xs text-slate-500">Fortschritt</span>
         <span className="text-xs text-slate-600 font-medium">
           {isComplete ? (
-            <span className="text-green-400">Abgeschlossen</span>
+            <span className="text-green-600">Abgeschlossen</span>
           ) : (
             `${totalScored}/100 Items`
           )}
@@ -89,9 +89,9 @@ export function ScoreProgress({
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-0.5">
                   <span className="text-[10px] text-slate-500">{fullLabel}</span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-slate-500">
                     {isDone ? (
-                      <span className="text-green-400">&#10003;</span>
+                      <span className="text-green-600">&#10003;</span>
                     ) : (
                       `${answered}/${total}`
                     )}
