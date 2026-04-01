@@ -1,0 +1,94 @@
+name: Security Scanning
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  python-security:
+    name: Python Security (bandit + safety)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scanning tools
+        run: pip install bandit safety
+
+      - name: Run bandit (backend)
+        run: bandit -r backend/app/ -f json -o bandit-backend.json || true
+
+      - name: Run bandit (agent-service)
+        run: bandit -r agent-service/src/ -f json -o bandit-agent.json || true
+
+      - name: Display bandit results
+        run: |
+          echo "=== Backend ==="
+          cat bandit-backend.json | python -m json.tool || true
+          echo "=== Agent Service ==="
+          cat bandit-agent.json | python -m json.tool || true
+
+      - name: Check for HIGH/CRITICAL issues
+        run: |
+          HIGH_COUNT=$(cat bandit-backend.json bandit-agent.json 2>/dev/null | python -c "
+          import json, sys
+          count = 0
+          for line in sys.stdin:
+              try:
+                  data = json.loads(line)
+                  count += sum(1 for r in data.get('results', []) if r['issue_severity'] in ('HIGH', 'MEDIUM'))
+              except: pass
+          print(count)
+          " 2>/dev/null || echo "0")
+          echo "Found $HIGH_COUNT HIGH/MEDIUM severity issues"
+          if [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "::warning::Found $HIGH_COUNT security issues — review before merging"
+          fi
+
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run semgrep
+        run: semgrep scan --config auto --error --severity ERROR .
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Audit Python deps (backend)
+        run: |
+          pip install pip-audit
+          pip-audit -r backend/requirements.txt || true
+
+      - name: Audit Python deps (agent-service)
+        run: pip-audit -r agent-service/requirements.txt || true
+
+      - name: Audit Node deps (frontend)
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
