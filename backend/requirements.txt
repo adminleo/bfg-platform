@@ -12,7 +12,7 @@ python-multipart==0.0.19
 redis[hiredis]==5.2.1
 httpx==0.28.1
 anthropic==0.42.0
-qdrant-client==1.12.1
+qdrant-client==1.17.1
 numpy==2.2.1
 
 # Rate Limiting
